@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  summary   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resources Resource[]
+}
+
+model Resource {
+  id         String   @id @default(cuid())
+  name       String
+  capacity   Int
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId String
+  bookings   Booking[]
+}
+
+model AddOn {
+  id        String   @id @default(cuid())
+  name      String
+  priceCents Int
+  perPerson Boolean   @default(false)
+  bookings  Booking[] @relation("BookingAddOns", references: [id])
+}
+
+model Booking {
+  id          String    @id @default(cuid())
+  email       String
+  name        String?
+  date        DateTime
+  size        Int
+  resource    Resource  @relation(fields: [resourceId], references: [id])
+  resourceId  String
+  addOns      AddOn[]   @relation("BookingAddOns")
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}

@@ -1,0 +1,31 @@
+import "./globals.css";
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Hart van Eindhoven",
+  description: "Bowling in a church, karaoke, and more — book your experience.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="nl">
+      <body>
+        <header className="container py-6 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold">Hart van Eindhoven</Link>
+          <nav className="flex gap-6 text-sm">
+            <Link href="/activities">Activiteiten</Link>
+            <Link href="/packages">Arrangementen</Link>
+            <Link href="/planning">Prijzen & Info</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/booking" className="btn-primary">Reserveer</Link>
+          </nav>
+        </header>
+        <main className="container pb-20">{children}</main>
+        <footer className="container py-12 text-sm text-white/70">
+          © {new Date().getFullYear()} Hart van Eindhoven
+        </footer>
+      </body>
+    </html>
+  );
+}
