@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Inter:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,8 +9,14 @@
 }
 
 html, body {
+  font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--fg);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
 }
 
 .container {
@@ -19,8 +26,38 @@ html, body {
   @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold transition;
 }
 .btn-primary {
-  @apply btn bg-brand-500 hover:bg-brand-400;
+  @apply btn bg-brand-500 hover:bg-brand-400 focus:ring-2 focus:ring-accent-500 focus:outline-none;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold transition hover:scale-105 focus:ring-2 focus:ring-accent-500 focus:outline-none;
 }
 .card {
   @apply rounded-2xl bg-black/25 backdrop-blur border border-white/10 shadow-soft;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+details summary {
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+input, select, button {
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, button:focus {
+  outline: none;
+  ring: 2px solid #FF7A18;
 }

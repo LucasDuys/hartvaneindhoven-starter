@@ -15,13 +15,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/" className="text-xl font-bold">Hart van Eindhoven</Link>
           <nav className="flex gap-6 text-sm">
             <Link href="/activities">Activiteiten</Link>
-            <Link href="/packages">Arrangementen</Link>
-            <Link href="/planning">Prijzen & Info</Link>
-            <Link href="/contact">Contact</Link>
             <Link href="/booking" className="btn-primary">Reserveer</Link>
           </nav>
         </header>
         <main className="container pb-20">{children}</main>
+        <div className="fixed bottom-4 right-4 md:hidden z-50">
+          <Link href="/booking" className="btn-primary shadow-soft" aria-label="Book now">Reserveer nu</Link>
+        </div>
         <footer className="container py-12 text-sm text-white/70">
           © {new Date().getFullYear()} Hart van Eindhoven
         </footer>
