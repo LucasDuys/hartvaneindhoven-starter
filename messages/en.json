@@ -1,0 +1,51 @@
+{
+  "Nav": {
+    "viewActivities": "View Activities",
+    "reserve": "Reserve"
+  },
+  "Home": {
+    "title": "Bowling in a Church ⛪🎳",
+    "description": "Experience unique bowling lanes, karaoke rooms and interactive games in the heart of Eindhoven."
+  },
+  "Activities": {
+    "title": "Our Activities",
+    "description": "Discover our unique range of entertainment in the heart of Eindhoven."
+  },
+  "Booking": {
+    "title": "Book Now",
+    "description": "Reserve your spot for an unforgettable experience.",
+    "step1": "Step 1: Choose Activity",
+    "activityLabel": "Activity",
+    "next": "Next",
+    "step2": "Step 2: Date, Time & Size",
+    "partySizeLabel": "Number of people",
+    "dateLabel": "Date",
+    "timeLabel": "Available times",
+    "nextAddons": "Next: Add-ons",
+    "step3": "Step 3: Add-ons",
+    "addonsDescription": "Select optional extras for your booking.",
+    "addonsSubtotal": "Add-ons subtotal",
+    "nextPayment": "Next: Payment",
+    "step4": "Step 4: Payment",
+    "paymentDescription": "Enter your payment details (demo with Stripe).",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "total": "Total",
+    "pay": "Pay securely with Stripe",
+    "demoNote": "Demo: No real payment.",
+    "step5": "Confirmation!",
+    "confirmation": "Your booking for {activity} on {date} at {slot} for {partySize} people is confirmed.",
+    "details": "Details",
+    "activity": "Activity",
+    "dateTime": "Date & time",
+    "number": "Number",
+    "addons": "Add-ons",
+    "totalCost": "Total",
+    "emailConfirmation": "Email",
+    "confirmationSent": "Confirmation sent to {email}.",
+    "downloadIcs": "Download .ics calendar",
+    "newBooking": "New booking",
+    "prototypeNote": "This is a prototype. Backend integration active.",
+    "error": "Error: {message}"
+  }
+}

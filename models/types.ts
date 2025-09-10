@@ -1,5 +1,14 @@
-export type AvailabilityQuery = {
-  activitySlug: string;
+export interface AvailabilityInput {
+  activityId: string;
   date: string; // YYYY-MM-DD
-  partySize: number;
-};
+  durationMinutes: number;
+}
+
+export interface BookingInput {
+  email: string;
+  name?: string;
+  date: Date;
+  size: number;
+  resourceId: string;
+  addOnIds?: string[];
+}

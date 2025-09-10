@@ -1,6 +1,27 @@
 import { NextResponse } from "next/server";
+import { getAvailableSlots } from "@/controllers/availability";
+import { AvailabilityInput } from "@/controllers/availability";
 
-export async function GET() {
-  // TODO: read params and check DB for resource availability
-  return NextResponse.json({ slots: ["15:00","16:00","17:00","18:00"] });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const activityId = searchParams.get('activityId');
+  const date = searchParams.get('date');
+  const duration = searchParams.get('duration') || '60';
+
+  if (!activityId || !date) {
+    return NextResponse.json({ error: 'Missing activityId or date' }, { status: 400 });
+  }
+
+  const input: AvailabilityInput = {
+    activityId,
+    date,
+    durationMinutes: parseInt(duration),
+  };
+
+  try {
+    const slots = await getAvailableSlots(input);
+    return NextResponse.json({ slots });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch availability' }, { status: 500 });
+  }
 }
