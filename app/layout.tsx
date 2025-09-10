@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import SafeYear from "../components/SafeYear";
 
 export const metadata: Metadata = {
   title: "Hart van Eindhoven",
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/booking" className="btn-primary shadow-soft" aria-label="Book now">Reserveer nu</Link>
         </div>
         <footer className="container py-12 text-sm text-white/70">
-          © {new Date().getFullYear()} Hart van Eindhoven
+          © <SafeYear /> Hart van Eindhoven
         </footer>
       </body>
     </html>

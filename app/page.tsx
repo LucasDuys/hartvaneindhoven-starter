@@ -24,10 +24,10 @@ export default function Home() {
             { name: 'Bowlen', slug: 'bowlen', desc: 'Geniet van bowling op historische banen.' },
             { name: 'Karaoke', slug: 'karaoke', desc: 'Zing je favoriete hits in privé kamers.' },
             { name: 'Beat the Matrix', slug: 'beat-the-matrix', desc: 'Test je behendigheid in dit interactieve spel.' }
-          ].map((activity, i) => (
-            <Link key={i} href={`/activities/${activity.slug}`} className="card p-6 hover:scale-[1.01] transition animate-fade-in" style={{ animationDelay: `${i * 0.2}s` }} aria-label={`Bekijk ${activity.name}`}>
-              <h3 className="text-xl font-bold mb-2">{activity.name}</h3>
-              <p className="text-white/70">{activity.desc}</p>
+          ].map(({ name, slug, desc }) => (
+            <Link key={slug} href={`/activities/${slug}`} className="card p-6 hover:scale-[1.01] transition animate-fade-in" aria-label={`Bekijk ${name}`}>
+              <h3 className="text-xl font-bold mb-2">{name}</h3>
+              <p className="text-white/70">{desc}</p>
             </Link>
           ))}
         </div>

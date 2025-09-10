@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Metadata } from "next";
+import ActivityClient from "./ActivityClient";
 
-type Params = { params: { slug: string } };
+type Params = { params: { locale: string; slug: string } };
 
 const copy: Record<string, {
   title: string;
@@ -74,18 +75,18 @@ const copy: Record<string, {
 };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const data = copy[params.slug] ?? { title: "Activiteit" };
+  const data = copy[params.slug] ?? { title: "Activiteit", summary: "Boek je activiteit bij Hart van Eindhoven." };
   return {
     title: `${data.title} - Hart van Eindhoven`,
     description: data.summary,
     openGraph: {
-      images: [data.heroImage],
+      images: [data.heroImage ?? "https://source.unsplash.com/random/1920x1080/?activity"],
     },
   };
 }
 
 export default function ActivityPage({ params }: Params) {
-  const data = copy[params.slug] ?? { title: "Activiteit", summary: "Details volgen.", duration: "", heroImage: "", gallery: [], pricing: [], faqs: [] };
+  const data = copy[params.slug] ?? { title: "Activiteit", summary: "Details volgen.", duration: "", heroImage: "https://source.unsplash.com/random/1920x1080/?activity", gallery: [], pricing: [], faqs: [] };
   return (
     <>
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('${data.heroImage}')` }} aria-label={`${data.title} hero image`}>
@@ -145,28 +146,7 @@ export default function ActivityPage({ params }: Params) {
           </div>
         </section>
 
-        <section className="animate-fade-in" aria-label="Inline booking widget">
-          <h2 className="text-2xl font-bold mb-6">Snelle Boeking</h2>
-          <div className="card p-6 max-w-md mx-auto">
-            <form className="space-y-4">
-              <label className="block">
-                <span className="text-white/80">Activiteit</span>
-                <input type="text" value={data.title} readOnly className="mt-1 block w-full rounded-lg bg-black/25 border border-white/10 p-2 text-white" />
-              </label>
-              <label className="block">
-                <span className="text-white/80">Datum & Tijd</span>
-                <input type="datetime-local" className="mt-1 block w-full rounded-lg bg-black/25 border border-white/10 p-2 text-white" aria-label="Selecteer datum en tijd" />
-              </label>
-              <label className="block">
-                <span className="text-white/80">Aantal personen</span>
-                <select className="mt-1 block w-full rounded-lg bg-black/25 border border-white/10 p-2 text-white" aria-label="Selecteer aantal personen">
-                  <option>2</option><option>4</option><option>6</option><option>8+</option>
-                </select>
-              </label>
-              <button type="button" className="w-full btn-primary py-2" onClick={() => window.location.href = `/booking?activity=${params.slug}`}>Ga naar volledige boeking</button>
-            </form>
-          </div>
-        </section>
+        <ActivityClient slug={params.slug} title={data.title} />
       </article>
     </>
   );

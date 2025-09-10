@@ -5,6 +5,7 @@ import {getMessages} from 'next-intl/server';
 import {ReactNode} from 'react';
 import LanguageToggle from '@/components/LanguageToggle';
 import Link from 'next/link';
+import SafeYear from '../../components/SafeYear';
 import '../globals.css';
 
 export default async function LocaleLayout({
@@ -39,7 +40,7 @@ export default async function LocaleLayout({
             <Link href="/booking" className="btn-primary shadow-soft" aria-label="Book now">Reserveer nu</Link>
           </div>
           <footer className="container py-12 text-sm text-white/70">
-            © {new Date().getFullYear()} Hart van Eindhoven
+            © <SafeYear /> Hart van Eindhoven
           </footer>
         </NextIntlClientProvider>
       </body>
