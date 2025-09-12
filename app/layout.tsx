@@ -15,8 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="container py-6 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold">Hart van Eindhoven</Link>
           <nav className="flex gap-6 text-sm">
-            <Link href="/activities">Activiteiten</Link>
-            <Link href="/booking" className="btn-primary">Reserveer</Link>
+            <Link href="/activities" className="btn-primary">Activiteiten</Link>
+            <Link href="/booking" className="btn-primary shadow-soft">Reserveer</Link>
           </nav>
         </header>
         <main className="container pb-20">{children}</main>

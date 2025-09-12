@@ -13,7 +13,7 @@ export default function Home() {
           <p className="text-xl text-white/90 mb-8">{t('description')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking" className="btn-primary text-lg px-8 py-3">Reserveer nu</Link>
-            <Link href="/activities" className="btn bg-white text-brand-600 hover:bg-gray-100 text-lg px-8 py-3">Bekijk activiteiten</Link>
+            <Link href="/activities" className="btn btn-primary text-lg px-8 py-3">Bekijk activiteiten</Link>
           </div>
         </div>
       </section>
