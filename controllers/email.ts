@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { renderBookingTemplate } from './emailTemplate';
 
 const EMAIL_ENABLED = process.env.EMAIL_ENABLED === 'true';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -16,6 +17,8 @@ type SendBookingEmailInput = {
   totalCents?: number;
   replyToName?: string;
   replyToEmail?: string;
+  name?: string | null;
+  locale?: 'nl' | 'en';
 };
 
 function formatIcsDate(dt: Date): string {
@@ -84,6 +87,8 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
     totalCents,
     replyToName,
     replyToEmail,
+    name,
+    locale = 'nl',
   } = input;
 
   if (!EMAIL_ENABLED) {
@@ -114,20 +119,18 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
         .join('')}</ul>`
     : '<p>Geen add-ons geselecteerd.</p>';
 
-  const html = `
-  <div style="font-family:Inter,Arial,sans-serif; line-height:1.5">
-    <h2>Bevestiging van je boeking</h2>
-    <p>Bedankt voor je reservering bij <strong>Hart van Eindhoven</strong>.</p>
-    <p><strong>Activiteit:</strong> ${activityName}<br/>
-       <strong>Aantal:</strong> ${size}<br/>
-       <strong>Start:</strong> ${start.toUTCString()}<br/>
-       <strong>Eindtijd:</strong> ${end.toUTCString()}<br/>
-       <strong>Reserveringsnummer:</strong> ${bookingId}</p>
-    <h3>Extra's</h3>
-    ${addOnsHtml}
-    ${typeof totalCents === 'number' ? `<p><strong>Totaal:</strong> €${euros(totalCents)}</p>` : ''}
-    <p>Je vindt een kalenderbestand (.ics) in de bijlage.</p>
-  </div>`;
+  const html = renderBookingTemplate({
+    locale,
+    name,
+    activityName,
+    start,
+    end,
+    size,
+    addOns: addOns.map(a => ({ name: a.name, perPerson: a.perPerson, price: `€${euros(a.priceCents * (a.perPerson ? size : 1))}` })),
+    total: typeof totalCents === 'number' ? `€${euros(totalCents)}` : undefined,
+    helpUrl: 'mailto:' + (process.env.CONTACT_EMAIL || 'info@hartvaneindhoven.nl'),
+    address: 'Hart van Eindhoven, [street address]',
+  });
 
   // If no API key or client, log and skip to avoid breaking booking flow
   if (!resend) {
