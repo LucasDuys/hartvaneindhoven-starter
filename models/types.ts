@@ -2,6 +2,7 @@ export interface AvailabilityInput {
   activityId: string;
   date: string; // YYYY-MM-DD
   durationMinutes: number;
+  size?: number;
 }
 
 export interface BookingInput {
@@ -9,6 +10,8 @@ export interface BookingInput {
   name?: string;
   date: Date;
   size: number;
-  resourceId: string;
+  resourceId?: string;
+  activityId?: string;
+  durationMinutes?: number;
   addOnIds?: string[];
 }

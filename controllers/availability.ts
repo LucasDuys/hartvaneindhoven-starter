@@ -1,55 +1,60 @@
 import { prisma } from "@/lib/db";
 import { AvailabilityInput } from "@/models/types";
 
+// Temporary default while duration per activity/booking is not modeled in DB
+const DEFAULT_BOOKING_MINUTES = 60;
+
 export async function getAvailableSlots(input: AvailabilityInput) {
-  const { activityId, date, durationMinutes } = input;
+  const { activityId, date, durationMinutes, size } = input;
 
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
-  // Find all resources for the activity
+  // All resources for the activity
   const resources = await prisma.resource.findMany({
-    where: { activityId },
+    where: size ? { activityId, capacity: { gte: size } } : { activityId },
   });
+  if (resources.length === 0) return [];
 
-  if (resources.length === 0) {
-    return [];
-  }
-
-  // Find all bookings for the day
+  // Day's bookings on those resources (non-cancelled)
   const bookings = await prisma.booking.findMany({
     where: {
-      resourceId: { in: resources.map(r => r.id) },
-      date: {
-        gte: startOfDay,
-        lte: endOfDay,
-      },
+      resourceId: { in: resources.map((r) => r.id) },
+      date: { gte: startOfDay, lte: endOfDay },
       status: { not: "CANCELLED" },
     },
+    select: { id: true, date: true, resourceId: true },
   });
 
-  // Generate possible slots (e.g., every hour from 12:00 to 22:00)
+  // Generate candidate slots (hourly, 12:00-22:00)
   const possibleSlots: string[] = [];
   for (let hour = 12; hour <= 22; hour++) {
-    possibleSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+    possibleSlots.push(`${hour.toString().padStart(2, "0")}:00`);
   }
 
-  // Filter slots based on availability
-  const availableSlots = possibleSlots.filter(slot => {
-    const slotTime = new Date(date + 'T' + slot + ':00');
-    const endTime = new Date(slotTime);
-    endTime.setMinutes(endTime.getMinutes() + durationMinutes);
+  const requestedDuration = Number.isFinite(durationMinutes)
+    ? durationMinutes
+    : DEFAULT_BOOKING_MINUTES;
 
-    // Check if any booking overlaps with this slot
-    const overlappingBookings = bookings.filter(booking => {
-      const bookingEnd = new Date(booking.date);
-      bookingEnd.setMinutes(bookingEnd.getMinutes() + (booking.size * 10 || 60)); // Assume 10 min per person or 60 min
-      return slotTime < bookingEnd && endTime > booking.date;
+  // For each slot, if at least one resource has no overlapping booking, it is available
+  const availableSlots = possibleSlots.filter((slot) => {
+    const slotStart = new Date(`${date}T${slot}:00`);
+    const slotEnd = new Date(slotStart);
+    slotEnd.setMinutes(slotEnd.getMinutes() + requestedDuration);
+
+    // Check resources one by one
+    return resources.some((res) => {
+      const reservations = bookings.filter((b) => b.resourceId === res.id);
+      const overlaps = reservations.some((b) => {
+        const bStart = new Date(b.date);
+        const bEnd = new Date(b.date);
+        bEnd.setMinutes(bEnd.getMinutes() + DEFAULT_BOOKING_MINUTES);
+        return slotStart < bEnd && slotEnd > bStart;
+      });
+      return !overlaps;
     });
-
-    return overlappingBookings.length === 0;
   });
 
   return availableSlots;

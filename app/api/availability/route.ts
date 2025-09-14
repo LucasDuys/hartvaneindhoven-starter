@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const activityId = searchParams.get('activityId');
   const date = searchParams.get('date');
   const duration = searchParams.get('duration') || '60';
+  const sizeParam = searchParams.get('size');
 
   if (!activityId || !date) {
     return NextResponse.json({ error: 'Missing activityId or date' }, { status: 400 });
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
     activityId,
     date,
     durationMinutes: parseInt(duration),
+    size: sizeParam ? parseInt(sizeParam) : undefined,
   };
 
   try {

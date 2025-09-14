@@ -1,26 +1,96 @@
 import { prisma } from "@/lib/db";
 import { BookingInput } from "@/models/types";
 
-export async function createBooking(input: BookingInput) {
-  const { email, name, date, size, resourceId, addOnIds = [] } = input;
+const DEFAULT_BOOKING_MINUTES = 60;
 
-  // Conflict checking - check if the slot is available
-  const conflictingBooking = await prisma.booking.findFirst({
+function rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
+  return aStart < bEnd && aEnd > bStart;
+}
+
+async function findAvailableResource(activityId: string, start: Date, end: Date) {
+  const resources = await prisma.resource.findMany({ where: { activityId } });
+  if (resources.length === 0) return null;
+
+  const bookings = await prisma.booking.findMany({
     where: {
-      resourceId,
-      date,
+      resourceId: { in: resources.map((r) => r.id) },
       status: { not: "CANCELLED" },
+      date: { lte: end },
     },
+    select: { id: true, date: true, resourceId: true },
   });
 
-  if (conflictingBooking) {
-    throw new Error("Resource is already booked for this time slot");
+  for (const res of resources) {
+    const resBookings = bookings.filter((b) => b.resourceId === res.id);
+    const conflict = resBookings.some((b) => {
+      const bStart = new Date(b.date);
+      const bEnd = new Date(b.date);
+      bEnd.setMinutes(bEnd.getMinutes() + DEFAULT_BOOKING_MINUTES);
+      return rangesOverlap(start, end, bStart, bEnd);
+    });
+    if (!conflict) return res;
+  }
+  return null;
+}
+
+export async function createBooking(input: BookingInput) {
+  const {
+    email,
+    name,
+    date,
+    size,
+    resourceId: providedResourceId,
+    activityId,
+    addOnIds = [],
+    durationMinutes,
+  } = input;
+
+  const duration = Number.isFinite(durationMinutes) ? (durationMinutes as number) : DEFAULT_BOOKING_MINUTES;
+  const start = new Date(date);
+  const end = new Date(start);
+  end.setMinutes(end.getMinutes() + duration);
+
+  // Resolve resource: use provided resourceId or auto-allocate by activityId
+  let resourceId = providedResourceId || null;
+  let resource = null as null | { id: string; capacity: number };
+
+  if (!resourceId) {
+    if (!activityId) {
+      throw new Error("Provide either resourceId or activityId to allocate a resource");
+    }
+    const available = await findAvailableResource(activityId, start, end);
+    if (!available) {
+      throw new Error("No available resources for the selected time");
+    }
+    resourceId = available.id;
+    resource = { id: available.id, capacity: available.capacity } as any;
+  }
+
+  // Load resource and capacity
+  if (!resource) {
+    const res = await prisma.resource.findUnique({ where: { id: resourceId! } });
+    if (!res) throw new Error("Resource not found");
+    resource = { id: res.id, capacity: res.capacity } as any;
   }
 
   // Capacity check
-  const resource = await prisma.resource.findUnique({ where: { id: resourceId } });
-  if (!resource || size > resource.capacity) {
+  if (size > (resource!.capacity || 0)) {
     throw new Error("Party size exceeds resource capacity");
+  }
+
+  // Time-range conflict check on the chosen resource
+  const existing = await prisma.booking.findMany({
+    where: { resourceId: resource!.id, status: { not: "CANCELLED" } },
+    select: { date: true },
+  });
+  const hasConflict = existing.some((b) => {
+    const bStart = new Date(b.date);
+    const bEnd = new Date(b.date);
+    bEnd.setMinutes(bEnd.getMinutes() + DEFAULT_BOOKING_MINUTES);
+    return rangesOverlap(start, end, bStart, bEnd);
+  });
+  if (hasConflict) {
+    throw new Error("Resource is already booked for this time range");
   }
 
   // Create booking
@@ -28,27 +98,22 @@ export async function createBooking(input: BookingInput) {
     data: {
       email,
       name,
-      date,
+      date: start,
       size,
-      resourceId,
+      resourceId: resource!.id,
       status: "PENDING",
     },
     include: {
       resource: {
-        include: {
-          activity: true
-        }
-      }
-    }
+        include: { activity: true },
+      },
+    },
   });
 
   // Add add-ons if any
   if (addOnIds.length > 0) {
     await prisma.bookingAddOn.createMany({
-      data: addOnIds.map(addOnId => ({
-        bookingId: booking.id,
-        addOnId,
-      })),
+      data: addOnIds.map((addOnId) => ({ bookingId: booking.id, addOnId })),
     });
   }
 
@@ -56,17 +121,9 @@ export async function createBooking(input: BookingInput) {
   const bookingWithAddons = await prisma.booking.findUnique({
     where: { id: booking.id },
     include: {
-      addOns: {
-        include: {
-          addOn: true
-        }
-      },
-      resource: {
-        include: {
-          activity: true
-        }
-      }
-    }
+      addOns: { include: { addOn: true } },
+      resource: { include: { activity: true } },
+    },
   });
 
   return bookingWithAddons;
