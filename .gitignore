@@ -18,3 +18,4 @@
 *.log
 .env*
 tsconfig.tsbuildinfo
+package-lock.json
