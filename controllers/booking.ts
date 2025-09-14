@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { BookingInput } from "@/models/types";
+import { computeQuote } from "@/controllers/pricing";
 
 const DEFAULT_BOOKING_MINUTES = 60;
 
@@ -45,7 +46,8 @@ export async function createBooking(input: BookingInput) {
     durationMinutes,
   } = input;
 
-  const duration = Number.isFinite(durationMinutes) ? (durationMinutes as number) : DEFAULT_BOOKING_MINUTES;
+  // Determine duration: explicit > activity default > fallback
+  let duration = Number.isFinite(durationMinutes) ? (durationMinutes as number) : DEFAULT_BOOKING_MINUTES;
   const start = new Date(date);
   const end = new Date(start);
   end.setMinutes(end.getMinutes() + duration);
@@ -68,9 +70,13 @@ export async function createBooking(input: BookingInput) {
 
   // Load resource and capacity
   if (!resource) {
-    const res = await prisma.resource.findUnique({ where: { id: resourceId! } });
+    const res = await prisma.resource.findUnique({ where: { id: resourceId! }, include: { activity: true } });
     if (!res) throw new Error("Resource not found");
     resource = { id: res.id, capacity: res.capacity } as any;
+    if (!activityId) {
+      // set activityId from resource
+      (input as any).activityId = res.activityId;
+    }
   }
 
   // Capacity check
@@ -81,12 +87,11 @@ export async function createBooking(input: BookingInput) {
   // Time-range conflict check on the chosen resource
   const existing = await prisma.booking.findMany({
     where: { resourceId: resource!.id, status: { not: "CANCELLED" } },
-    select: { date: true },
   });
   const hasConflict = existing.some((b) => {
     const bStart = new Date(b.date);
     const bEnd = new Date(b.date);
-    bEnd.setMinutes(bEnd.getMinutes() + DEFAULT_BOOKING_MINUTES);
+    bEnd.setMinutes(bEnd.getMinutes() + ((b as any).durationMinutes || DEFAULT_BOOKING_MINUTES));
     return rangesOverlap(start, end, bStart, bEnd);
   });
   if (hasConflict) {
@@ -104,9 +109,8 @@ export async function createBooking(input: BookingInput) {
       status: "PENDING",
     },
     include: {
-      resource: {
-        include: { activity: true },
-      },
+      resource: { include: { activity: true } },
+      addOns: { include: { addOn: true } },
     },
   });
 
@@ -126,5 +130,14 @@ export async function createBooking(input: BookingInput) {
     },
   });
 
-  return bookingWithAddons;
+  // Pricing breakdown
+  const quote = await computeQuote({
+    activityId: (input.activityId as string) || bookingWithAddons!.resource.activityId,
+    date: start,
+    size,
+    durationMinutes: duration,
+    addOnIds,
+  });
+
+  return { booking: bookingWithAddons, pricing: quote };
 }

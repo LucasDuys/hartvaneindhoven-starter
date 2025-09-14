@@ -9,6 +9,69 @@ function euros(cents: number) {
   return (cents / 100).toFixed(2);
 }
 
+function PricePreview({ activityId, date, slot, size, addOnIds }: { activityId: string; date: string; slot: string; size: number; addOnIds: string[]; }) {
+  const [quote, setQuote] = useState<{ totalCents: number; items: { label: string; cents: number }[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ready = activityId && date && slot && size > 0;
+    if (!ready) return;
+    let aborted = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [y, m, d] = date.split("-").map(Number);
+        const [hh, mm] = slot.split(":").map(Number);
+        const iso = new Date(Date.UTC(y, (m || 1) - 1, d || 1, hh || 0, mm || 0)).toISOString();
+        const res = await fetch('/api/booking/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activityId, date: iso, size, durationMinutes: 60, addOnIds }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Kon prijs niet ophalen');
+        if (!aborted) setQuote(json.pricing);
+      } catch (e: any) {
+        if (!aborted) setError(e.message || 'Fout bij prijsberekening');
+      } finally {
+        if (!aborted) setLoading(false);
+      }
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [activityId, date, slot, size, addOnIds.join(',')]);
+
+  return (
+    <div className="bg-black/20 rounded-xl p-4 border border-white/10">
+      <div className="flex items-center justify-between">
+        <span className="text-white/80">Totaal</span>
+        {loading ? (
+          <span className="text-white/60">Berekenen…</span>
+        ) : error ? (
+          <span className="text-red-400">{error}</span>
+        ) : quote ? (
+          <span className="font-semibold">€{euros(quote.totalCents)}</span>
+        ) : (
+          <span className="text-white/60">—</span>
+        )}
+      </div>
+      {quote && (
+        <ul className="mt-2 text-sm text-white/70 list-disc pl-5 space-y-1">
+          {quote.items.map((i, idx) => (
+            <li key={idx} className="flex justify-between">
+              <span>{i.label}</span>
+              <span>€{euros(i.cents)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function BookingInner() {
   const searchParams = useSearchParams();
   const initialSlug = searchParams.get("activity") || "";
@@ -26,7 +89,8 @@ function BookingInner() {
   const [partySize, setPartySize] = useState(2);
   const [date, setDate] = useState(""); // YYYY-MM-DD
   const [slot, setSlot] = useState(""); // HH:mm
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  type SlotItem = { time: string; remaining: number };
+  const [availableSlots, setAvailableSlots] = useState<SlotItem[]>([]);
   const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
   const [paymentInfo, setPaymentInfo] = useState({ name: "", email: "" });
   const [bookingResult, setBookingResult] = useState<any>(null);
@@ -203,18 +267,19 @@ function BookingInner() {
                   <span className="text-white/60">Geen tijden beschikbaar.</span>
                 )}
                 {!loading &&
-                  availableSlots.map((t) => (
+                  availableSlots.map((s) => (
                     <button
-                      key={t}
-                      onClick={() => setSlot(t)}
+                      key={s.time}
+                      onClick={() => setSlot(s.time)}
                       className={`btn px-4 py-2 ${
-                        slot === t
+                        slot === s.time
                           ? "btn-primary"
                           : "bg-black/40 border border-white/10 hover:bg-brand-600"
                       }`}
-                      aria-pressed={slot === t}
+                      aria-pressed={slot === s.time}
+                      disabled={s.remaining === 0}
                     >
-                      {t}
+                      {s.time} ({s.remaining} over)
                     </button>
                   ))}
               </div>
@@ -286,9 +351,13 @@ function BookingInner() {
                 placeholder="Email adres"
                 aria-label="Email voor bevestiging"
               />
-              <div className="text-right text-white/80 mb-4">
-                Totaal (alleen add-ons): €{euros(addonsTotalCents)}
-              </div>
+              <PricePreview
+                activityId={activityId}
+                date={date}
+                slot={slot}
+                size={partySize}
+                addOnIds={selectedAddOnIds}
+              />
               <button
                 className="w-full btn-primary py-3"
                 disabled={!paymentInfo.name || !paymentInfo.email || !activityId || !date || !slot}
@@ -315,7 +384,7 @@ function BookingInner() {
                     });
                     const json = await res.json();
                     if (!res.ok) throw new Error(json.error || "Boeking mislukt");
-                    setBookingResult(json.booking);
+                    setBookingResult(json);
                     setStep(5);
                   } catch (e: any) {
                     setError(e.message || "Onbekende fout bij boeken");
@@ -341,7 +410,9 @@ function BookingInner() {
                 <li>Datum & tijd: {date} {slot}</li>
                 <li>Aantal: {partySize}</li>
                 <li>Add-ons: {selectedAddOnIds.map((id) => addonsList.find(a => a.id === id)?.name).filter(Boolean).join(', ') || 'Geen'}</li>
-                <li>Totaal add-ons: €{euros(addonsTotalCents)}</li>
+                {bookingResult?.pricing && (
+                  <li>Totaal: €{euros(bookingResult.pricing.totalCents)}</li>
+                )}
                 <li>Email: {paymentInfo.email}</li>
                 {bookingResult?.id && <li>Boeking ID: {bookingResult.id}</li>}
               </ul>

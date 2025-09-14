@@ -2,30 +2,33 @@ import { prisma } from '../lib/db';
 import { Prisma } from '@prisma/client';
 
 async function main() {
-  // Create activities
+  // Create/update activities
   const activities = [
     {
       slug: 'bowlen',
       name: 'Bowlen',
-      summary: 'Unieke bowlingbanen in een kerk met neon vibe. Capaciteit: 6 p.p. per baan. Perfect voor groepen en families.'
+      summary:
+        'Unieke bowlingbanen in een kerk met neon vibe. Capaciteit: 6 p.p. per baan. Perfect voor groepen en families.',
     },
     {
       slug: 'karaoke',
       name: 'Karaoke',
-      summary: 'Privékamers met top sound. Kies je playlist en zing mee. Van solo tot groep.'
+      summary:
+        'Privékamers met top sound. Kies je playlist en zing mee. Van solo tot groep.',
     },
     {
       slug: 'beat-the-matrix',
       name: 'Beat the Matrix',
-      summary: 'Interactieve challenge rooms met puzzels en teamwork. Test je behendigheid.'
-    }
+      summary:
+        'Interactieve challenge rooms met puzzels en teamwork. Test je behendigheid.',
+    },
   ];
 
   for (const activity of activities) {
     await prisma.activity.upsert({
       where: { slug: activity.slug },
       update: {},
-      create: activity
+      create: activity as any,
     });
   }
 
@@ -40,8 +43,8 @@ async function main() {
           data: {
             name,
             capacity: 6,
-            activityId: bowlenId
-          }
+            activityId: bowlenId,
+          },
         });
       }
     }
@@ -58,8 +61,8 @@ async function main() {
           data: {
             name,
             capacity: 10,
-            activityId: karaokeId
-          }
+            activityId: karaokeId,
+          },
         });
       }
     }
@@ -76,8 +79,8 @@ async function main() {
           data: {
             name,
             capacity: 6,
-            activityId: matrixId
-          }
+            activityId: matrixId,
+          },
         });
       }
     }
@@ -87,14 +90,14 @@ async function main() {
   const addOns = [
     { name: 'Drinks Package', priceCents: 500, perPerson: true },
     { name: 'Food Package', priceCents: 800, perPerson: true },
-    { name: 'Extra Time', priceCents: 1000, perPerson: false }
+    { name: 'Extra Time', priceCents: 1000, perPerson: false },
   ];
 
   for (const addOn of addOns) {
     const existing = await prisma.addOn.findFirst({ where: { name: addOn.name } });
     if (!existing) {
       await prisma.addOn.create({
-        data: addOn
+        data: addOn,
       });
     }
   }

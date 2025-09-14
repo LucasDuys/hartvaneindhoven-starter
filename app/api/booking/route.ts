@@ -27,8 +27,8 @@ export async function POST(req: Request) {
       ...validated,
       date: new Date(validated.date),
     };
-    const booking = await createBooking(input);
-    return NextResponse.json({ success: true, booking });
+    const result = await createBooking(input);
+    return NextResponse.json({ success: true, ...result });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

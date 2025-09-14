@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { AvailabilityInput } from "@/models/types";
+import { generateTimeGrid, toUtcFromLocal } from "@/lib/schedule";
 
 // Temporary default while duration per activity/booking is not modeled in DB
 const DEFAULT_BOOKING_MINUTES = 60;
@@ -28,35 +29,34 @@ export async function getAvailableSlots(input: AvailabilityInput) {
     select: { id: true, date: true, resourceId: true },
   });
 
-  // Generate candidate slots (hourly, 12:00-22:00)
-  const possibleSlots: string[] = [];
-  for (let hour = 12; hour <= 22; hour++) {
-    possibleSlots.push(`${hour.toString().padStart(2, "0")}:00`);
-  }
+  // Generate candidate slots on a 30-min grid within opening hours
+  const possibleSlots: string[] = generateTimeGrid(date, 30);
 
   const requestedDuration = Number.isFinite(durationMinutes)
     ? durationMinutes
     : DEFAULT_BOOKING_MINUTES;
 
   // For each slot, if at least one resource has no overlapping booking, it is available
-  const availableSlots = possibleSlots.filter((slot) => {
-    const [hh, mm] = slot.split(":").map(Number);
-    const slotStart = new Date(Date.UTC(y, (m || 1) - 1, d || 1, hh || 0, mm || 0));
+  const availableWithCounts = possibleSlots.map((slot) => {
+    const slotStart = toUtcFromLocal(date, slot);
     const slotEnd = new Date(slotStart);
     slotEnd.setMinutes(slotEnd.getMinutes() + requestedDuration);
 
-    // Check resources one by one
-    return resources.some((res) => {
+    let freeCount = 0;
+    for (const res of resources) {
       const reservations = bookings.filter((b) => b.resourceId === res.id);
-      const overlaps = reservations.some((b) => {
+      const hasOverlap = reservations.some((b) => {
         const bStart = new Date(b.date);
         const bEnd = new Date(b.date);
-        bEnd.setMinutes(bEnd.getMinutes() + DEFAULT_BOOKING_MINUTES);
+        // If existing bookings start having durationMinutes stored, use it; fallback default
+        const existingDuration = (b as any).durationMinutes || DEFAULT_BOOKING_MINUTES;
+        bEnd.setMinutes(bEnd.getMinutes() + existingDuration);
         return slotStart < bEnd && slotEnd > bStart;
       });
-      return !overlaps;
-    });
-  });
+      if (!hasOverlap) freeCount++;
+    }
+    return { time: slot, remaining: freeCount };
+  }).filter(item => item.remaining > 0);
 
-  return availableSlots;
+  return availableWithCounts;
 }
