@@ -296,7 +296,10 @@ function BookingInner() {
                   try {
                     setLoading(true);
                     setError(null);
-                    const iso = new Date(`${date}T${slot}:00`).toISOString();
+                    // Build UTC timestamp from local YYYY-MM-DD and HH:mm so DB shows the same wall time
+                    const [y, m, d] = date.split("-").map(Number);
+                    const [hh, mm] = slot.split(":").map(Number);
+                    const iso = new Date(Date.UTC(y, (m || 1) - 1, d || 1, hh || 0, mm || 0)).toISOString();
                     const res = await fetch("/api/booking", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },

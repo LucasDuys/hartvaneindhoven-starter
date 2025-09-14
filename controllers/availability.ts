@@ -7,10 +7,10 @@ const DEFAULT_BOOKING_MINUTES = 60;
 export async function getAvailableSlots(input: AvailabilityInput) {
   const { activityId, date, durationMinutes, size } = input;
 
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  // Parse date as local (venue) day and build UTC day bounds to keep DB and UI aligned
+  const [y, m, d] = date.split("-").map(Number);
+  const startOfDay = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0, 0));
+  const endOfDay = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 23, 59, 59, 999));
 
   // All resources for the activity
   const resources = await prisma.resource.findMany({
@@ -40,7 +40,8 @@ export async function getAvailableSlots(input: AvailabilityInput) {
 
   // For each slot, if at least one resource has no overlapping booking, it is available
   const availableSlots = possibleSlots.filter((slot) => {
-    const slotStart = new Date(`${date}T${slot}:00`);
+    const [hh, mm] = slot.split(":").map(Number);
+    const slotStart = new Date(Date.UTC(y, (m || 1) - 1, d || 1, hh || 0, mm || 0));
     const slotEnd = new Date(slotStart);
     slotEnd.setMinutes(slotEnd.getMinutes() + requestedDuration);
 
