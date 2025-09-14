@@ -2,32 +2,35 @@ import { prisma } from '../lib/db';
 import { Prisma } from '@prisma/client';
 
 async function main() {
-  // Create/update activities
+  // Create/update activities with default durations
   const activities = [
     {
       slug: 'bowlen',
       name: 'Bowlen',
       summary:
         'Unieke bowlingbanen in een kerk met neon vibe. Capaciteit: 6 p.p. per baan. Perfect voor groepen en families.',
+      durationMinutes: 60,
     },
     {
       slug: 'karaoke',
       name: 'Karaoke',
       summary:
         'Privékamers met top sound. Kies je playlist en zing mee. Van solo tot groep.',
+      durationMinutes: 60,
     },
     {
       slug: 'beat-the-matrix',
       name: 'Beat the Matrix',
       summary:
         'Interactieve challenge rooms met puzzels en teamwork. Test je behendigheid.',
+      durationMinutes: 60,
     },
   ];
 
   for (const activity of activities) {
     await prisma.activity.upsert({
       where: { slug: activity.slug },
-      update: {},
+      update: { durationMinutes: activity.durationMinutes },
       create: activity as any,
     });
   }

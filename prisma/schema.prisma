@@ -3,18 +3,20 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // ✅ the *name* of the variable
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Activity {
-  id        String     @id @default(cuid())
-  slug      String     @unique
-  name      String
-  summary   String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  resources Resource[]
+  id              String     @id @default(cuid())
+  slug            String     @unique
+  name            String
+  summary         String?
+  durationMinutes Int        @default(60)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  resources       Resource[]
 }
 
 model Resource {
@@ -35,17 +37,18 @@ model AddOn {
 }
 
 model Booking {
-  id         String         @id @default(cuid())
-  email      String
-  name       String?
-  date       DateTime
-  size       Int
-  resource   Resource       @relation(fields: [resourceId], references: [id])
-  resourceId String
-  addOns     BookingAddOn[] // join rows
-  status     BookingStatus  @default(PENDING)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  id              String         @id @default(cuid())
+  email           String
+  name            String?
+  date            DateTime
+  size            Int
+  durationMinutes Int            @default(60)
+  resource        Resource       @relation(fields: [resourceId], references: [id])
+  resourceId      String
+  addOns          BookingAddOn[] // join rows
+  status          BookingStatus  @default(PENDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model BookingAddOn {
@@ -63,3 +66,4 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
 }
+

@@ -8,7 +8,7 @@ function rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
   return aStart < bEnd && aEnd > bStart;
 }
 
-async function findAvailableResource(activityId: string, start: Date, end: Date) {
+async function findAvailableResource(activityId: string, start: Date, durationMinutes: number) {
   const resources = await prisma.resource.findMany({ where: { activityId } });
   if (resources.length === 0) return null;
 
@@ -16,9 +16,9 @@ async function findAvailableResource(activityId: string, start: Date, end: Date)
     where: {
       resourceId: { in: resources.map((r) => r.id) },
       status: { not: "CANCELLED" },
-      date: { lte: end },
+      date: { lte: start },
     },
-    select: { id: true, date: true, resourceId: true },
+    select: { id: true, date: true, resourceId: true, durationMinutes: true },
   });
 
   for (const res of resources) {
@@ -26,8 +26,11 @@ async function findAvailableResource(activityId: string, start: Date, end: Date)
     const conflict = resBookings.some((b) => {
       const bStart = new Date(b.date);
       const bEnd = new Date(b.date);
-      bEnd.setMinutes(bEnd.getMinutes() + DEFAULT_BOOKING_MINUTES);
-      return rangesOverlap(start, end, bStart, bEnd);
+      bEnd.setMinutes(bEnd.getMinutes() + (b.durationMinutes || DEFAULT_BOOKING_MINUTES));
+      const s = new Date(start);
+      const e = new Date(start);
+      e.setMinutes(e.getMinutes() + durationMinutes);
+      return rangesOverlap(s, e, bStart, bEnd);
     });
     if (!conflict) return res;
   }
@@ -46,9 +49,21 @@ export async function createBooking(input: BookingInput) {
     durationMinutes,
   } = input;
 
+  // Resolve activityId if only resourceId was provided
+  let resolvedActivityId = activityId || null;
+  if (!resolvedActivityId && providedResourceId) {
+    const res = await prisma.resource.findUnique({ where: { id: providedResourceId } });
+    if (!res) throw new Error("Resource not found");
+    resolvedActivityId = res.activityId;
+  }
+
+  const start = new Date(date);
   // Determine duration: explicit > activity default > fallback
   let duration = Number.isFinite(durationMinutes) ? (durationMinutes as number) : DEFAULT_BOOKING_MINUTES;
-  const start = new Date(date);
+  if (!Number.isFinite(durationMinutes) && resolvedActivityId) {
+    const act = await prisma.activity.findUnique({ where: { id: resolvedActivityId } });
+    if (act?.durationMinutes) duration = act.durationMinutes;
+  }
   const end = new Date(start);
   end.setMinutes(end.getMinutes() + duration);
 
@@ -57,10 +72,10 @@ export async function createBooking(input: BookingInput) {
   let resource = null as null | { id: string; capacity: number };
 
   if (!resourceId) {
-    if (!activityId) {
+    if (!resolvedActivityId) {
       throw new Error("Provide either resourceId or activityId to allocate a resource");
     }
-    const available = await findAvailableResource(activityId, start, end);
+    const available = await findAvailableResource(resolvedActivityId, start, duration);
     if (!available) {
       throw new Error("No available resources for the selected time");
     }
@@ -73,10 +88,7 @@ export async function createBooking(input: BookingInput) {
     const res = await prisma.resource.findUnique({ where: { id: resourceId! }, include: { activity: true } });
     if (!res) throw new Error("Resource not found");
     resource = { id: res.id, capacity: res.capacity } as any;
-    if (!activityId) {
-      // set activityId from resource
-      (input as any).activityId = res.activityId;
-    }
+    if (!resolvedActivityId) resolvedActivityId = res.activityId;
   }
 
   // Capacity check
@@ -105,6 +117,7 @@ export async function createBooking(input: BookingInput) {
       name,
       date: start,
       size,
+      durationMinutes: duration,
       resourceId: resource!.id,
       status: "PENDING",
     },
