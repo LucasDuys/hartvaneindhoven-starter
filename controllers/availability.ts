@@ -32,9 +32,14 @@ export async function getAvailableSlots(input: AvailabilityInput) {
   // Generate candidate slots on a 30-min grid within opening hours
   const possibleSlots: string[] = generateTimeGrid(date, 30);
 
-  const requestedDuration = Number.isFinite(durationMinutes)
-    ? durationMinutes
+  let requestedDuration = Number.isFinite(durationMinutes)
+    ? (durationMinutes as number)
     : DEFAULT_BOOKING_MINUTES;
+  // If not provided, use activity default
+  if (!Number.isFinite(durationMinutes)) {
+    const act = await prisma.activity.findUnique({ where: { id: activityId } });
+    if (act?.durationMinutes) requestedDuration = act.durationMinutes;
+  }
 
   // For each slot, if at least one resource has no overlapping booking, it is available
   const availableWithCounts = possibleSlots.map((slot) => {
