@@ -47,6 +47,8 @@ export async function POST(req: Request) {
         size: b?.size || input.size,
         addOns,
         totalCents: result?.pricing?.totalCents,
+        replyToName: 'Hart van Eindhoven',
+        replyToEmail: process.env.CONTACT_EMAIL || undefined,
       });
     } catch (e) {
       console.warn('[email] Failed to send confirmation:', (e as Error).message);

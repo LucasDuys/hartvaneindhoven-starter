@@ -1,5 +1,10 @@
 import { Resend } from 'resend';
 
+const EMAIL_ENABLED = process.env.EMAIL_ENABLED === 'true';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM = process.env.RESEND_FROM || process.env.EMAIL_FROM || 'Hart van Eindhoven <no-reply@hartvaneindhoven.local>';
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
 type SendBookingEmailInput = {
   to: string;
   activityName: string;
@@ -9,6 +14,8 @@ type SendBookingEmailInput = {
   size: number;
   addOns?: { name: string; perPerson: boolean; priceCents: number }[];
   totalCents?: number;
+  replyToName?: string;
+  replyToEmail?: string;
 };
 
 function formatIcsDate(dt: Date): string {
@@ -31,17 +38,21 @@ export function buildIcs({
   description,
   start,
   end,
+  location,
+  url,
 }: {
   uid: string;
   summary: string;
   description: string;
   start: Date;
   end: Date;
+  location?: string;
+  url?: string;
 }) {
   const dtStart = formatIcsDate(start);
   const dtEnd = formatIcsDate(end);
   const dtStamp = formatIcsDate(new Date());
-  return [
+  const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Hart van Eindhoven//Booking//EN',
@@ -54,9 +65,11 @@ export function buildIcs({
     `DTEND:${dtEnd}`,
     `SUMMARY:${summary}`,
     `DESCRIPTION:${description.replace(/\n/g, '\\n')}`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n');
+  ];
+  if (location) lines.push(`LOCATION:${location}`);
+  if (url) lines.push(`URL:${url}`);
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  return lines.join('\r\n');
 }
 
 export async function sendBookingConfirmationEmail(input: SendBookingEmailInput) {
@@ -69,10 +82,14 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
     size,
     addOns = [],
     totalCents,
+    replyToName,
+    replyToEmail,
   } = input;
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM || process.env.EMAIL_FROM || 'Hart van Eindhoven <no-reply@hartvaneindhoven.local>';
+  if (!EMAIL_ENABLED) {
+    console.warn('[email] EMAIL_ENABLED is not true. Skipping send.');
+    return { skipped: true };
+  }
 
   // Build ICS
   const start = new Date(date);
@@ -85,6 +102,8 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
     description: `Boeking: ${activityName}\nAantal: ${size}\nReserveringsnummer: ${bookingId}`,
     start,
     end,
+    location: 'Hart van Eindhoven, [street address]',
+    url: 'https://hartvaneindhoven.nl',
   });
 
   const addOnsHtml = addOns.length
@@ -110,18 +129,19 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
     <p>Je vindt een kalenderbestand (.ics) in de bijlage.</p>
   </div>`;
 
-  // If no API key, log and skip to avoid breaking booking flow
-  if (!apiKey) {
+  // If no API key or client, log and skip to avoid breaking booking flow
+  if (!resend) {
     console.warn('[email] RESEND_API_KEY not set. Skipping send.');
     return { skipped: true };
   }
 
-  const resend = new Resend(apiKey);
   const res = await resend.emails.send({
-    from,
+    from: FROM,
     to,
     subject: `Bevestiging — ${activityName}`,
     html,
+    // Resend API uses snake_case for reply_to
+    ...(replyToEmail ? { reply_to: replyToEmail } : {}),
     attachments: [
       {
         filename: 'booking.ics',
@@ -132,4 +152,3 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
 
   return res;
 }
-
