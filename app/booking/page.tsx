@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function Booking() {
+function BookingInner() {
   const searchParams = useSearchParams();
   const initialActivity = searchParams.get('activity') || '';
   const [step, setStep] = useState(1);
@@ -180,5 +180,13 @@ export default function Booking() {
         <p className="text-center text-white/60 text-sm mt-8">Dit is een static prototype. Geen backend integratie.</p>
       </section>
     </>
+  );
+}
+
+export default function Booking() {
+  return (
+    <Suspense fallback={null}>
+      <BookingInner />
+    </Suspense>
   );
 }

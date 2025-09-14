@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAvailableSlots } from "@/controllers/availability";
-import { AvailabilityInput } from "@/controllers/availability";
+import { AvailabilityInput } from "@/models/types";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

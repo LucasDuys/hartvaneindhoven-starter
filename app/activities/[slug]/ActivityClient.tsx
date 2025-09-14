@@ -26,3 +26,4 @@ export default function ActivityClient({ slug, title }: { slug: string; title: s
     </section>
   );
 }
+

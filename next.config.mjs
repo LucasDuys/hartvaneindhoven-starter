@@ -1,10 +1,12 @@
 /** @type {import('next').NextConfig} */
-import createNextIntlPlugin from 'next-intl/plugin';
+const nextConfig = {
+  async redirects() {
+    return [
+      // Redirect old locale-prefixed paths to non-prefixed equivalents
+      { source: '/nl/:path*', destination: '/:path*', permanent: true },
+      { source: '/en/:path*', destination: '/:path*', permanent: true }
+    ];
+  }
+};
 
-const withNextIntl = createNextIntlPlugin(
-  './i18n/request.ts'
-);
-
-const nextConfig = {};
-
-export default withNextIntl(nextConfig);
+export default nextConfig;
