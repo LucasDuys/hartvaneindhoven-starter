@@ -16,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/" className="text-xl font-bold">Hart van Eindhoven</Link>
           <nav className="flex gap-6 text-sm">
             <Link href="/activities" className="btn-primary">Activiteiten</Link>
+            <Link href="/about" className="btn-primary">Over ons</Link>
             <Link href="/booking" className="btn-primary shadow-soft">Reserveer</Link>
           </nav>
         </header>
