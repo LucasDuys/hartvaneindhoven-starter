@@ -27,7 +27,7 @@ export default function ActivitiesExpand({ activities }: { activities: Activity[
             aria-expanded={open === a.slug}
           >
             <div className="h-40 mb-4 overflow-hidden rounded-xl">
-              <img src={a.hero} alt={a.title} className="w-full h-full object-cover" />
+              <motion.img layoutId={`img-${a.slug}`} src={a.hero} alt={a.title} className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold mb-2">{a.title}</h3>
             <p className="text-white/70">{a.desc}</p>
@@ -54,7 +54,7 @@ export default function ActivitiesExpand({ activities }: { activities: Activity[
               className="fixed inset-4 md:inset-10 z-50 card overflow-hidden"
             >
               <div className="relative h-56 md:h-72 w-full">
-                <img src={selected.hero} alt={selected.title} className="absolute inset-0 w-full h-full object-cover" />
+                <motion.img layoutId={`img-${selected.slug}`} src={selected.hero} alt={selected.title} className="absolute inset-0 w-full h-full object-cover" />
                 <button
                   onClick={() => setOpen(null)}
                   aria-label="Sluiten"
@@ -82,4 +82,3 @@ export default function ActivitiesExpand({ activities }: { activities: Activity[
     </div>
   );
 }
-

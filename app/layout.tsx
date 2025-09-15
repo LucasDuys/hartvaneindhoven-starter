@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import SafeYear from "../components/SafeYear";
+import MotionProvider from "@/components/MotionProvider";
 
 export const metadata: Metadata = {
   title: "Hart van Eindhoven",
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/booking" className="btn-primary shadow-soft">Reserveer</Link>
           </nav>
         </header>
-        <main className="container pb-20">{children}</main>
+        <MotionProvider>
+          <main className="container pb-20">{children}</main>
+        </MotionProvider>
         <div className="fixed bottom-4 right-4 md:hidden z-50">
           <Link href="/booking" className="btn-primary shadow-soft" aria-label="Book now">Reserveer nu</Link>
         </div>
@@ -34,4 +37,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

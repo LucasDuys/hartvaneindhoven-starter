@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FaqAccordion from "@/components/FaqAccordion";
 
 export default function Home() {
   return (
@@ -112,30 +113,16 @@ export default function Home() {
                 </a>
               </div>
             </div>
-            <div className="card p-6" aria-label="FAQ links">
+            <div className="card p-6" aria-label="FAQ">
               <h2 className="text-2xl font-bold mb-3">FAQ</h2>
-              <ul className="text-white/80 list-disc pl-5 space-y-2">
-                <li>
-                  <a href="#" className="hover:text-brand-400 underline">
-                    Kan ik annuleren of wijzigen?
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-brand-400 underline">
-                    Wat is de maximale groepsgrootte?
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-brand-400 underline">
-                    Zijn bumpers beschikbaar voor kinderen?
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-brand-400 underline">
-                    Hoe werkt betalen en bevestigen?
-                  </a>
-                </li>
-              </ul>
+              <FaqAccordion
+                items={[
+                  { q: 'Kan ik annuleren of wijzigen?', a: 'Ja, tot 24 uur vooraf kun je kosteloos annuleren of wijzigen. Daarna neem je best even contact op.' },
+                  { q: 'Wat is de maximale groepsgrootte?', a: 'Per bowlingbaan adviseren we max. 6 personen. Karaoke kamers zijn geschikt tot 10 personen.' },
+                  { q: 'Zijn bumpers beschikbaar voor kinderen?', a: 'Ja, bumpers zijn beschikbaar op aanvraag voor kinderen tot 12 jaar.' },
+                  { q: 'Hoe werkt betalen en bevestigen?', a: 'Na het boeken ontvang je per e-mail een bevestiging met kalenderbijlage. Betaling volgt in de kassa of na online betaalstap (binnenkort).' },
+                ]}
+              />
             </div>
           </div>
           <div className="card overflow-hidden h-[380px]" aria-label="Kaart locatie (footer)">
