@@ -13,7 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl">
       <body>
         <header className="container py-6 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold">Hart van Eindhoven</Link>
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/hve-logo.png" alt="Hart van Eindhoven" className="h-8 w-auto" />
+            <span className="hidden sm:inline text-xl font-bold">Hart van Eindhoven</span>
+          </Link>
           <nav className="flex gap-6 text-sm">
             <Link href="/activities" className="btn-primary">Activiteiten</Link>
             <Link href="/about" className="btn-primary">Over ons</Link>
