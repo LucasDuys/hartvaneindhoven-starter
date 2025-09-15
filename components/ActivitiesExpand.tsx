@@ -53,17 +53,28 @@ export default function ActivitiesExpand({ activities }: { activities: Activity[
               layoutId={`card-${selected.slug}`}
               className="fixed inset-4 md:inset-10 z-50 card overflow-hidden"
             >
-              <div className="relative h-56 md:h-72 w-full">
-                <motion.img layoutId={`img-${selected.slug}`} src={selected.hero} alt={selected.title} className="absolute inset-0 w-full h-full object-cover" />
-                <button
-                  onClick={() => setOpen(null)}
-                  aria-label="Sluiten"
-                  className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full w-9 h-9 flex items-center justify-center"
-                >
-                  ×
-                </button>
+              {/* Full backdrop image, blurred and darkened */}
+              <div className="absolute inset-0">
+                <motion.img
+                  layoutId={`img-${selected.slug}`}
+                  src={selected.hero}
+                  alt={selected.title}
+                  className="w-full h-full object-contain blur-md"
+                />
+                <div className="absolute inset-0 bg-black/60" />
               </div>
-              <div className="p-6 space-y-4">
+
+              {/* Close button */}
+              <button
+                onClick={() => setOpen(null)}
+                aria-label="Sluiten"
+                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full w-9 h-9 flex items-center justify-center z-10"
+              >
+                ×
+              </button>
+
+              {/* Foreground content */}
+              <div className="relative z-10 p-6 space-y-4">
                 <h3 className="text-2xl font-bold">{selected.title}</h3>
                 <p className="text-white/80 max-w-2xl">{selected.desc}</p>
                 <div className="flex gap-3">

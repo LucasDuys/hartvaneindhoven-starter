@@ -6,7 +6,7 @@ export default function Home() {
     <>
       <section
         className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('https://source.unsplash.com/random/1920x1080/?bowling,church')" }}
+        style={{ backgroundImage: "url('/bowling-alley.jpeg')" }}
         aria-label="Hero section with bowling in church"
       >
         <div className="absolute inset-0 bg-black/40"></div>
