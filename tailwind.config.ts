@@ -9,19 +9,19 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#f5f2ff",
-          100: "#ebe5ff",
-          200: "#d6ccff",
-          300: "#b3a5ff",
-          400: "#8f7eff",
-          500: "#6b57ff", // primary
-          600: "#5645cc",
-          700: "#403399",
-          800: "#2b2266",
-          900: "#161133"
+          50: "#fef2f2",
+          100: "#fee2e2",
+          200: "#fecaca",
+          300: "#fca5a5",
+          400: "#f87171",
+          500: "#ef4444", // primary red
+          600: "#dc2626",
+          700: "#b91c1c",
+          800: "#991b1b",
+          900: "#7f1d1d"
         },
         accent: {
-          500: "#ff7a18"
+          500: "#ff3b3b"
         }
       },
       boxShadow: {
