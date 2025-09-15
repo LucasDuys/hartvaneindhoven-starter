@@ -49,6 +49,20 @@ model Booking {
   status          BookingStatus  @default(PENDING)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  emailEvents     EmailEvent[]
+}
+
+model EmailEvent {
+  id         String   @id @default(cuid())
+  bookingId  String?
+  type       String
+  status     String?
+  providerId String?
+  recipient  String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
 }
 
 model BookingAddOn {
@@ -66,4 +80,3 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
 }
-

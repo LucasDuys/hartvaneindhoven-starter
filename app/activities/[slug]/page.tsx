@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import ActivityClient from "./ActivityClient";
+import ActivityHero from "@/components/ActivityHero";
 
 type Params = { params: { slug: string } };
 
@@ -89,13 +90,7 @@ export default function ActivityPage({ params }: Params) {
   const data = copy[params.slug] ?? { title: "Activiteit", summary: "Details volgen.", duration: "", heroImage: "", gallery: [], pricing: [], faqs: [] };
   return (
     <>
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('${data.heroImage}')` }} aria-label={`${data.title} hero image`}>
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative z-10 text-center animate-fade-in max-w-4xl px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{data.title}</h1>
-          <p className="text-xl text-white/90">{data.summary}</p>
-        </div>
-      </section>
+      <ActivityHero slug={params.slug} imageUrl={data.heroImage} title={data.title} summary={data.summary} />
       <article className="container py-16 space-y-12">
         <section className="animate-fade-in">
           <h2 className="text-2xl font-bold mb-2">Details</h2>

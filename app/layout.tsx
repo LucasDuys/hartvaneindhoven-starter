@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import SafeYear from "../components/SafeYear";
+import MotionProvider from "@/components/MotionProvider";
 
 export const metadata: Metadata = {
   title: "Hart van Eindhoven",
@@ -13,13 +14,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl">
       <body>
         <header className="container py-6 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold">Hart van Eindhoven</Link>
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/hve-logo.png" alt="Hart van Eindhoven" className="h-8 w-auto" />
+            <span className="hidden sm:inline text-xl font-bold">Hart van Eindhoven</span>
+          </Link>
           <nav className="flex gap-6 text-sm">
             <Link href="/activities" className="btn-primary">Activiteiten</Link>
+            <Link href="/about" className="btn-primary">Over ons</Link>
             <Link href="/booking" className="btn-primary shadow-soft">Reserveer</Link>
           </nav>
         </header>
-        <main className="container pb-20">{children}</main>
+        <MotionProvider>
+          <main className="container pb-20">{children}</main>
+        </MotionProvider>
         <div className="fixed bottom-4 right-4 md:hidden z-50">
           <Link href="/booking" className="btn-primary shadow-soft" aria-label="Book now">Reserveer nu</Link>
         </div>
