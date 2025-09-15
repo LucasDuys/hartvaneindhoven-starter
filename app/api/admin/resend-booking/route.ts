@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     addOnIds: booking.addOns.map(a => a.addOnId),
   });
 
-  await sendBookingConfirmationEmail({
+  const result = await sendBookingConfirmationEmail({
     to: booking.email,
     name: booking.name || null,
     activityName: booking.resource.activity.name,
@@ -48,6 +48,5 @@ export async function POST(req: NextRequest) {
     replyToEmail: process.env.CONTACT_EMAIL || undefined,
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, result });
 }
-
