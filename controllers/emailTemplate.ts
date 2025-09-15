@@ -13,6 +13,7 @@ type TemplateParams = {
   helpUrl?: string;
   address?: string;
   logoUrl?: string;
+  logoDataUri?: string;
 };
 
 const T = {
@@ -49,7 +50,7 @@ const T = {
 export function renderBookingTemplate(params: TemplateParams) {
   const {
     locale = 'nl', name, activityName, start, end, size, addOns = [], total, manageUrl, helpUrl,
-    address = 'Hart van Eindhoven, [street address]', logoUrl = ''
+    address = 'Hart van Eindhoven, [street address]', logoUrl = '', logoDataUri
   } = params;
 
   const t = T[locale] || T.nl;
@@ -64,9 +65,10 @@ export function renderBookingTemplate(params: TemplateParams) {
     ? `<ul style="margin:6px 0 0 18px; padding:0;">${addOns.map(a => `<li>${a.name}${a.perPerson ? ` x ${size}` : ''}${a.price ? ` — ${a.price}` : ''}</li>`).join('')}</ul>`
     : `<p style="margin:6px 0 0 0;">-</p>`;
 
+  const logoSrc = logoDataUri || logoUrl;
   return `
   <div style="font-family:Inter,Arial,sans-serif; line-height:1.55; color:#111;">
-    ${logoUrl ? `<div style=\"margin-bottom:16px\"><img src=\"${logoUrl}\" alt=\"Hart van Eindhoven\" style=\"height:32px\"/></div>` : ''}
+    ${logoSrc ? `<div style=\"margin-bottom:16px\"><img src=\"${logoSrc}\" alt=\"Hart van Eindhoven\" style=\"height:32px\"/></div>` : ''}
     <h2 style="margin:0 0 12px;">${t.hello(name)}</h2>
     <p style="margin:0 0 6px;">${t.thanks(activityName)}</p>
     <p style="margin:0 0 16px;">${t.when(start)}</p>
@@ -97,4 +99,3 @@ export function renderBookingTemplate(params: TemplateParams) {
     <p style="margin:0; color:#6b7280; font-size:12px;">${address}</p>
   </div>`;
 }
-

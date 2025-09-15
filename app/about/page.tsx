@@ -96,7 +96,7 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-2 gap-6 items-stretch">
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Bezoek ons</h2>
-            <p className="text-white/80">Hart van Eindhoven, Kerkstraat 123, 5611 AA Eindhoven</p>
+            <p className="text-white/80">Hart van Eindhoven, Ploegstraat 3, 5615 HA Eindhoven</p>
             <div className="flex gap-3" aria-label="Social links">
               <SocialIcon label="Instagram" href="#">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
@@ -115,7 +115,7 @@ export default function AboutPage() {
           <div className="card overflow-hidden h-[360px] animate-fade-in" aria-label="Kaart locatie">
             <iframe
               title="Google Maps"
-              src="https://www.google.com/maps?q=Eindhoven%20center&output=embed"
+              src="https://www.google.com/maps?q=Ploegstraat%203%205615%20HA%20Eindhoven&output=embed"
               className="w-full h-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -126,4 +126,3 @@ export default function AboutPage() {
     </>
   );
 }
-

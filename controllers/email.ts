@@ -77,7 +77,34 @@ export function buildIcs({
   return lines.join('\r\n');
 }
 
-export function generateBookingEmail(input: Omit<SendBookingEmailInput, 'to' | 'replyToName' | 'replyToEmail'>) {
+async function tryLoadLogoDataUri() {
+  try {
+    const custom = process.env.EMAIL_LOGO_PATH;
+    const candidates: string[] = [];
+    const cwd = process.cwd();
+    if (custom) candidates.push(path.isAbsolute(custom) ? custom : path.join(cwd, custom));
+    candidates.push(path.join(cwd, 'public', 'logo.png'));
+    // Known filename in repo root
+    candidates.push(path.join(cwd, 'hart-van-eindhoven-logo-wit-scaled-e1755381819544-2048x1057.png'));
+    // Scan root for a likely logo file
+    try {
+      const rootFiles = await fs.readdir(cwd);
+      const match = rootFiles.find(f => /logo|hart/i.test(f) && /\.(png|jpg|jpeg|svg)$/i.test(f));
+      if (match) candidates.push(path.join(cwd, match));
+    } catch {}
+    for (const file of candidates) {
+      try {
+        const buf = await fs.readFile(file);
+        const ext = path.extname(file).toLowerCase();
+        const mime = ext === '.svg' ? 'image/svg+xml' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
+        return `data:${mime};base64,${buf.toString('base64')}`;
+      } catch {}
+    }
+  } catch {}
+  return undefined;
+}
+
+export async function generateBookingEmail(input: Omit<SendBookingEmailInput, 'to' | 'replyToName' | 'replyToEmail'>) {
   const {
     activityName,
     bookingId,
@@ -104,6 +131,8 @@ export function generateBookingEmail(input: Omit<SendBookingEmailInput, 'to' | '
     url: 'https://hartvaneindhoven.nl',
   });
 
+  const logoDataUri = await tryLoadLogoDataUri();
+
   const html = renderBookingTemplate({
     locale,
     name,
@@ -114,7 +143,8 @@ export function generateBookingEmail(input: Omit<SendBookingEmailInput, 'to' | '
     addOns: addOns.map(a => ({ name: a.name, perPerson: a.perPerson, price: `€${euros(a.priceCents * (a.perPerson ? size : 1))}` })),
     total: typeof totalCents === 'number' ? `€${euros(totalCents)}` : undefined,
     helpUrl: 'mailto:' + (process.env.CONTACT_EMAIL || 'info@hartvaneindhoven.nl'),
-    address: 'Hart van Eindhoven, [street address]',
+    address: 'Hart van Eindhoven, Ploegstraat 3, 5615 HA Eindhoven',
+    logoDataUri,
   });
 
   return { html, icsBase64: Buffer.from(ics).toString('base64'), start, end };
@@ -136,7 +166,7 @@ export async function sendBookingConfirmationEmail(input: SendBookingEmailInput)
     locale = 'nl',
   } = input;
 
-  const generated = generateBookingEmail({
+  const generated = await generateBookingEmail({
     activityName,
     bookingId,
     date,
