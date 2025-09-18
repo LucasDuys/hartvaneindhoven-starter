@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       date: booking.date,
       size: booking.size,
       durationMinutes: (booking as any).durationMinutes || 60,
-      addOnIds: booking.addOns.map(a => a.addOnId),
+      addOnIds: booking.addOns.map((a: any) => a.addOnId),
     });
     const gen = generateBookingEmail({
       activityName: booking.resource.activity.name,
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       date: booking.date,
       durationMinutes: (booking as any).durationMinutes || 60,
       size: booking.size,
-      addOns: booking.addOns.map(a => ({ name: a.addOn.name, perPerson: a.addOn.perPerson, priceCents: a.addOn.priceCents })),
+      addOns: booking.addOns.map((a: any) => ({ name: a.addOn.name, perPerson: a.addOn.perPerson, priceCents: a.addOn.priceCents })),
       totalCents: quote.totalCents,
       name: booking.name || null,
       locale,
@@ -53,4 +53,3 @@ export async function GET(req: NextRequest) {
   });
   return NextResponse.json(gen);
 }
-

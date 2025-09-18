@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     date: booking.date,
     size: booking.size,
     durationMinutes: (booking as any).durationMinutes || 60,
-    addOnIds: booking.addOns.map(a => a.addOnId),
+    addOnIds: booking.addOns.map((a: any) => a.addOnId),
   });
 
   const result = await sendBookingConfirmationEmail({
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     date: booking.date,
     durationMinutes: (booking as any).durationMinutes || 60,
     size: booking.size,
-    addOns: booking.addOns.map(a => ({ name: a.addOn.name, perPerson: a.addOn.perPerson, priceCents: a.addOn.priceCents })),
+    addOns: booking.addOns.map((a: any) => ({ name: a.addOn.name, perPerson: a.addOn.perPerson, priceCents: a.addOn.priceCents })),
     totalCents: quote.totalCents,
     locale: 'nl',
     replyToName: 'Hart van Eindhoven',

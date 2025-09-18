@@ -106,14 +106,19 @@ function BookingInner() {
     (async () => {
       try {
         const [aRes, addRes] = await Promise.all([
-          fetch("/api/activities"),
-          fetch("/api/addons"),
+          fetch("/api/activities", { cache: 'no-store' }),
+          fetch("/api/addons", { cache: 'no-store' }),
         ]);
         const aJson = await aRes.json();
         const addJson = await addRes.json();
         if (!cancelled) {
-          setActivities(aJson || []);
-          setAddonsList(addJson || []);
+          const aList = Array.isArray(aJson) ? aJson : [];
+          const adList = Array.isArray(addJson) ? addJson : [];
+          setActivities(aList);
+          setAddonsList(adList);
+          if ((!Array.isArray(aJson) || !Array.isArray(addJson)) && !error) {
+            setError("Kon data laden. Controleer databaseverbinding / prisma generate.");
+          }
         }
       } catch (e) {
         if (!cancelled) setError("Kon activiteiten/add-ons niet laden.");
@@ -147,7 +152,7 @@ function BookingInner() {
           duration: String(60),
           size: String(partySize),
         });
-        const res = await fetch(`/api/availability?${params.toString()}`);
+        const res = await fetch(`/api/availability?${params.toString()}`, { cache: 'no-store' });
         const json = await res.json();
         if (!aborted) setAvailableSlots(json.slots || []);
       } catch (e) {

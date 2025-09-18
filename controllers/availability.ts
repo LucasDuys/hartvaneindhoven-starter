@@ -22,7 +22,7 @@ export async function getAvailableSlots(input: AvailabilityInput) {
   // Day's bookings on those resources (non-cancelled)
   const bookings = await prisma.booking.findMany({
     where: {
-      resourceId: { in: resources.map((r) => r.id) },
+      resourceId: { in: resources.map((r: any) => r.id) },
       date: { gte: startOfDay, lte: endOfDay },
       status: { not: "CANCELLED" },
     },
@@ -49,8 +49,8 @@ export async function getAvailableSlots(input: AvailabilityInput) {
 
     let freeCount = 0;
     for (const res of resources) {
-      const reservations = bookings.filter((b) => b.resourceId === res.id);
-      const hasOverlap = reservations.some((b) => {
+      const reservations = bookings.filter((b: any) => b.resourceId === res.id);
+      const hasOverlap = reservations.some((b: any) => {
         const bStart = new Date(b.date);
         const bEnd = new Date(b.date);
         // If existing bookings start having durationMinutes stored, use it; fallback default
