@@ -5,7 +5,7 @@ const activities = [
     slug: "bowlen",
     title: "Bowlen",
     desc: "Geniet van bowling op historische banen in een unieke kerksetting.",
-    hero: "https://source.unsplash.com/random/800x600/?bowling",
+    hero: "/holy-bowling.webp",
   },
   {
     slug: "karaoke",
@@ -45,4 +45,3 @@ export default function Activities() {
     </>
   );
 }
-

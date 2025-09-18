@@ -62,7 +62,7 @@ export async function computeQuote(input: QuoteInput): Promise<Quote> {
 
   // Add-ons
   const addons = await prisma.addOn.findMany({ where: { id: { in: addOnIds } } });
-  const addOnsCents = addons.reduce((sum, a) => sum + a.priceCents * (a.perPerson ? size : 1), 0);
+  const addOnsCents = addons.reduce((sum: number, a: any) => sum + a.priceCents * (a.perPerson ? size : 1), 0);
 
   const items: Quote["items"] = [
     { label: `${activity.name} ${perPerson ? `x ${size}` : ''} (${durationMinutes} min)`, cents: baseCents },
@@ -74,4 +74,3 @@ export async function computeQuote(input: QuoteInput): Promise<Quote> {
   const totalCents = baseCents + addOnsCents;
   return { baseCents, addOnsCents, totalCents, items };
 }
-

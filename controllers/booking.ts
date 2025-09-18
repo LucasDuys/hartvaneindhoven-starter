@@ -14,7 +14,7 @@ async function findAvailableResource(activityId: string, start: Date, durationMi
 
   const bookings = await prisma.booking.findMany({
     where: {
-      resourceId: { in: resources.map((r) => r.id) },
+      resourceId: { in: resources.map((r: any) => r.id) },
       status: { not: "CANCELLED" },
       date: { lte: start },
     },
@@ -22,8 +22,8 @@ async function findAvailableResource(activityId: string, start: Date, durationMi
   });
 
   for (const res of resources) {
-    const resBookings = bookings.filter((b) => b.resourceId === res.id);
-    const conflict = resBookings.some((b) => {
+    const resBookings = bookings.filter((b: any) => b.resourceId === res.id);
+    const conflict = resBookings.some((b: any) => {
       const bStart = new Date(b.date);
       const bEnd = new Date(b.date);
       bEnd.setMinutes(bEnd.getMinutes() + (b.durationMinutes || DEFAULT_BOOKING_MINUTES));
@@ -100,7 +100,7 @@ export async function createBooking(input: BookingInput) {
   const existing = await prisma.booking.findMany({
     where: { resourceId: resource!.id, status: { not: "CANCELLED" } },
   });
-  const hasConflict = existing.some((b) => {
+  const hasConflict = existing.some((b: any) => {
     const bStart = new Date(b.date);
     const bEnd = new Date(b.date);
     bEnd.setMinutes(bEnd.getMinutes() + ((b as any).durationMinutes || DEFAULT_BOOKING_MINUTES));

@@ -18,10 +18,10 @@ const copy: Record<string, {
     title: "Bowlen",
     summary: "Unieke bowlingbanen in een kerk met neon vibe. Capaciteit: 6 p.p. per baan. Perfect voor groepen en families.",
     duration: "60–120 minuten",
-    heroImage: "https://source.unsplash.com/random/1920x1080/?bowling",
+    heroImage: "/holy-bowling.webp",
     gallery: [
-      "https://source.unsplash.com/random/400x300/?bowling1",
-      "https://source.unsplash.com/random/400x300/?bowling2",
+      "/bowling-alley.jpeg",
+      "/holy-bowling.webp",
       "https://source.unsplash.com/random/400x300/?bowling3"
     ],
     pricing: [
