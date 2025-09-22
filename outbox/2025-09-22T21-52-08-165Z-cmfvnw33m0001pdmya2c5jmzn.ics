@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Hart van Eindhoven//Booking//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:cmfvnw33m0001pdmya2c5jmzn
+DTSTAMP:20250922T215208Z
+DTSTART:20250925T123000Z
+DTEND:20250925T133000Z
+SUMMARY:Bowlen — Hart van Eindhoven
+DESCRIPTION:Boeking: Bowlen\nAantal: 2\nReserveringsnummer: cmfvnw33m0001pdmya2c5jmzn
+LOCATION:Hart van Eindhoven, [street address]
+URL:https://hartvaneindhoven.nl
+END:VEVENT
+END:VCALENDAR

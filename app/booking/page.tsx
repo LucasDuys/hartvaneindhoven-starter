@@ -9,6 +9,103 @@ function euros(cents: number) {
   return (cents / 100).toFixed(2);
 }
 
+// Helpers for date formatting (YYYY-MM-DD)
+function formatYMD(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// Simple month calendar with navigation and minDate enforcement
+function Calendar({ selected, onSelect, minDate }: { selected: string; onSelect: (d: string) => void; minDate: Date }) {
+  const initial = selected ? (() => {
+    const [yy, mm, dd] = selected.split('-').map(Number);
+    return new Date(yy, (mm || 1) - 1, dd || 1);
+  })() : new Date();
+  const [viewYear, setViewYear] = useState(initial.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initial.getMonth()); // 0-11
+
+  function shiftMonth(delta: number) {
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+  }
+
+  const firstOfMonth = new Date(viewYear, viewMonth, 1);
+  const lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+  const startWeekday = firstOfMonth.getDay(); // 0=Sun
+  const daysInMonth = lastOfMonth.getDate();
+
+  const min = new Date(minDate);
+  min.setHours(0, 0, 0, 0);
+
+  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString('nl-NL', {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  // Build cells: leading blanks + month days
+  const leading = startWeekday; // blanks before day 1
+  const cells: Array<{ key: string; label: string; date?: Date; disabled?: boolean }> = [];
+  for (let i = 0; i < leading; i++) cells.push({ key: `b${i}`, label: '' });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(viewYear, viewMonth, d);
+    dt.setHours(0, 0, 0, 0);
+    const disabled = dt < min;
+    cells.push({ key: `d${d}`, label: String(d), date: dt, disabled });
+  }
+
+  const selectedYmd = selected;
+
+  return (
+    <div className="bg-black/40 border border-white/10 rounded-xl p-3 text-white w-full max-w-sm">
+      <div className="flex items-center justify-between mb-3">
+        <button className="px-2 py-1 rounded hover:bg-white/10" onClick={() => shiftMonth(-1)} aria-label="Vorige maand">←</button>
+        <div className="font-semibold text-white/90 select-none">{monthLabel}</div>
+        <button className="px-2 py-1 rounded hover:bg-white/10" onClick={() => shiftMonth(1)} aria-label="Volgende maand">→</button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-xs text-white/70 mb-1">
+        {['Zo','Ma','Di','Wo','Do','Vr','Za'].map((d) => (
+          <div key={d} className="text-center">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((c) => c.date ? (
+          <button
+            key={c.key}
+            disabled={!!c.disabled}
+            onClick={() => onSelect(formatYMD(c.date!))}
+            className={`h-10 rounded text-sm flex items-center justify-center border ${
+              c.disabled ? 'text-white/30 border-white/5'
+              : (formatYMD(c.date!) === selectedYmd ? 'bg-brand-500 border-brand-500 text-black' : 'bg-black/30 hover:bg-black/20 border-white/10')
+            }`}
+            aria-pressed={formatYMD(c.date!) === selectedYmd}
+          >
+            {c.label}
+          </button>
+        ) : (
+          <div key={c.key} className="h-10" />
+        ))}
+      </div>
+      <div className="mt-3 flex justify-end">
+        <button
+          className="text-sm px-3 py-1 rounded border border-white/10 hover:bg-white/10"
+          onClick={() => {
+            const now = new Date();
+            const ymd = formatYMD(now);
+            onSelect(ymd);
+            setViewYear(now.getFullYear());
+            setViewMonth(now.getMonth());
+          }}
+        >
+          Vandaag
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PricePreview({ activityId, date, slot, size, addOnIds }: { activityId: string; date: string; slot: string; size: number; addOnIds: string[]; }) {
   const [quote, setQuote] = useState<{ totalCents: number; items: { label: string; cents: number }[] } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -262,9 +359,19 @@ function BookingInner() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white"
+                className="hidden w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white"
                 aria-label="Selecteer datum"
               />
+              <div className="relative mt-2">
+                <Calendar
+                  selected={date}
+                  onSelect={(ymd) => {
+                    setDate(ymd);
+                    setSlot("");
+                  }}
+                  minDate={new Date()}
+                />
+              </div>
               <label className="block text-sm text-white/70">Beschikbare tijden</label>
               <div className="flex gap-2 flex-wrap">
                 {loading && <span className="text-white/70">Laden…</span>}
@@ -291,16 +398,16 @@ function BookingInner() {
               <button
                 className="w-full btn-primary py-3"
                 disabled={!date || !slot}
-                onClick={() => setStep(3)}
+                onClick={() => setStep(addonsList.length > 0 ? 3 : 4)}
               >
-                Volgende: Add-ons
+                {addonsList.length > 0 ? 'Volgende: Add-ons' : 'Volgende: Gegevens'}
               </button>
             </div>
           )}
 
           {step === 3 && (
             <div className="space-y-4" role="form" aria-labelledby="step3-heading">
-              <h2 id="step3-heading" className="text-2xl font-bold">Stap 3: Add-ons</h2>
+              <h2 id="step3-heading" className="text-2xl font-bold">Stap 3: Add-ons (optioneel)</h2>
               <p className="text-white/80">Selecteer optionele extras voor je boeking.</p>
               <div className="space-y-3">
                 {addonsList.map((addon) => (
@@ -328,9 +435,14 @@ function BookingInner() {
               <div className="text-right text-white/80">
                 Subtotaal add-ons: €{euros(addonsTotalCents)}
               </div>
-              <button className="w-full btn-primary py-3" onClick={() => setStep(4)}>
-                Volgende: Gegevens
-              </button>
+              <div className="flex gap-2">
+                <button className="flex-1 btn py-3 border border-white/10" onClick={() => setStep(4)}>
+                  Overslaan
+                </button>
+                <button className="flex-1 btn-primary py-3" onClick={() => setStep(4)}>
+                  Volgende: Gegevens
+                </button>
+              </div>
             </div>
           )}
 
