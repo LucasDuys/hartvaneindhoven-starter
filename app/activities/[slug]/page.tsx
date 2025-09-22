@@ -14,75 +14,75 @@ const copy: Record<string, {
   pricing: { time: string; price: string; }[];
   faqs: { q: string; a: string; }[];
 }> = {
-  "bowlen": {
+  bowlen: {
     title: "Bowlen",
     summary: "Unieke bowlingbanen in een kerk met neon vibe. Capaciteit: 6 p.p. per baan. Perfect voor groepen en families.",
     duration: "60–120 minuten",
-    heroImage: "/holy-bowling.webp",
-    gallery: [
-      "/bowling-alley.jpeg",
-      "/holy-bowling.webp",
-      "https://source.unsplash.com/random/400x300/?bowling3"
-    ],
+    heroImage: "/hve-holy-bowling.jpg",
+    gallery: ["/bowling-alley.jpeg", "/hve-horeca1.jpg", "/hve-horeca2.jpg"],
     pricing: [
       { time: "Doordeweeks (off-peak)", price: "€25 per baan/uur" },
-      { time: "Weekend (peak)", price: "€35 per baan/uur" }
+      { time: "Weekend (peak)", price: "€35 per baan/uur" },
     ],
     faqs: [
       { q: "Zijn bumpers beschikbaar?", a: "Ja, voor kinderen tot 12 jaar." },
       { q: "Hoe annuleer ik?", a: "Annuleren tot 24 uur voor de boeking is gratis." },
-      { q: "Wat is inbegrepen?", a: "Banen, ballen en schoenen. Eten en drinken extra." }
-    ]
-  },
-  "karaoke": {
-    title: "Karaoke",
-    summary: "Privékamers met top sound. Kies je playlist en zing mee. Van solo tot groep.",
-    duration: "60–120 minuten",
-    heroImage: "https://source.unsplash.com/random/1920x1080/?karaoke",
-    gallery: [
-      "https://source.unsplash.com/random/400x300/?karaoke1",
-      "https://source.unsplash.com/random/400x300/?karaoke2",
-      "https://source.unsplash.com/random/400x300/?karaoke3"
+      { q: "Wat is inbegrepen?", a: "Banen, ballen en schoenen. Eten en drinken extra." },
     ],
+  },
+  karaoke: {
+    title: "Karaoke",
+    summary: "Privé‑kamers met top sound. Kies je playlist en zing mee. Van solo tot groep.",
+    duration: "60–120 minuten",
+    heroImage: "/hve-karaoke.jpg",
+    gallery: ["/hve-horeca1.jpg", "/hve-horeca2.jpg", "/hve-horeca3.jpg"],
     pricing: [
       { time: "Doordeweeks", price: "€10 p.p./uur" },
-      { time: "Weekend", price: "€15 p.p./uur" }
+      { time: "Weekend", price: "€15 p.p./uur" },
     ],
     faqs: [
       { q: "Hoeveel mensen per kamer?", a: "Tot 10 personen." },
       { q: "Eigen muziek?", a: "Ja, via USB of streaming." },
-      { q: "Minimumleeftijd?", a: "12 jaar, of met ouders." }
-    ]
+      { q: "Minimumleeftijd?", a: "12 jaar, of met ouders." },
+    ],
   },
   "beat-the-matrix": {
     title: "Beat the Matrix",
     summary: "Interactieve challenge rooms met puzzels en teamwork. Test je behendigheid.",
     duration: "60 minuten",
-    heroImage: "https://source.unsplash.com/random/1920x1080/?game,challenge",
-    gallery: [
-      "https://source.unsplash.com/random/400x300/?matrix1",
-      "https://source.unsplash.com/random/400x300/?matrix2",
-      "https://source.unsplash.com/random/400x300/?matrix3"
-    ],
-    pricing: [
-      { time: "Alle dagen", price: "€14 p.p." }
-    ],
+    heroImage: "/hve-beat-the-matrix2.jpg",
+    gallery: ["/hve-horeca1.jpg", "/hve-horeca2.jpg", "/hve-horeca3.jpg"],
+    pricing: [{ time: "Alle dagen", price: "€14 p.p." }],
     faqs: [
       { q: "Hoeveel spelers?", a: "2-6 personen per sessie." },
       { q: "Duur?", a: "Exact 60 minuten." },
-      { q: "Boekbaar voor kinderen?", a: "Vanaf 8 jaar." }
-    ]
-  }
+      { q: "Boekbaar voor kinderen?", a: "Vanaf 8 jaar." },
+    ],
+  },
+  fitness: {
+    title: "Fitness",
+    summary: "Small group training en individuele fitness in een unieke setting.",
+    duration: "60 minuten",
+    heroImage: "/hve-fitness.jpg",
+    gallery: ["/hve-fitness.jpg", "/hve-horeca1.jpg", "/hve-horeca2.jpg"],
+    pricing: [
+      { time: "Doordeweeks", price: "€12 p.p./uur" },
+      { time: "Weekend", price: "€15 p.p./uur" },
+    ],
+    faqs: [
+      { q: "Benodigdheden?", a: "Sportkleding en binnenschoenen." },
+      { q: "Groepsgrootte?", a: "Small group tot 10 personen." },
+      { q: "Begeleiding?", a: "Trainer beschikbaar op aanvraag." },
+    ],
+  },
 };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const data = copy[params.slug] ?? { title: "Activiteit" };
+  const data = copy[params.slug] ?? { title: "Activiteit", summary: "", heroImage: "/bowling-alley.jpeg" } as any;
   return {
     title: `${data.title} - Hart van Eindhoven`,
     description: data.summary,
-    openGraph: {
-      images: [data.heroImage],
-    },
+    openGraph: { images: [data.heroImage] },
   };
 }
 
@@ -103,7 +103,7 @@ export default function ActivityPage({ params }: Params) {
           <div className="grid md:grid-cols-3 gap-4">
             {data.gallery.map((img, i) => (
               <div key={i} className="card overflow-hidden" style={{ animationDelay: `${i * 0.1}s` }}>
-                <img src={img} alt={`${data.title} afbeelding ${i+1}`} className="w-full h-48 object-cover" />
+                <img src={img} alt={`${data.title} afbeelding ${i + 1}`} className="w-full h-48 object-cover" />
               </div>
             ))}
           </div>
@@ -114,11 +114,17 @@ export default function ActivityPage({ params }: Params) {
             <h2 className="text-xl font-bold mb-4">Prijzen</h2>
             <table className="w-full text-white/80">
               <thead>
-                <tr><th className="text-left pb-2">Tijd</th><th className="text-left pb-2">Prijs</th></tr>
+                <tr>
+                  <th className="text-left pb-2">Tijd</th>
+                  <th className="text-left pb-2">Prijs</th>
+                </tr>
               </thead>
               <tbody>
                 {data.pricing.map((p, i) => (
-                  <tr key={i}><td className="pb-2">{p.time}</td><td className="pb-2">{p.price}</td></tr>
+                  <tr key={i}>
+                    <td className="pb-2">{p.time}</td>
+                    <td className="pb-2">{p.price}</td>
+                  </tr>
                 ))}
               </tbody>
             </table>

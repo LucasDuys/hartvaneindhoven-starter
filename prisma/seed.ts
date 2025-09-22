@@ -25,6 +25,13 @@ async function main() {
         'Interactieve challenge rooms met puzzels en teamwork. Test je behendigheid.',
       durationMinutes: 60,
     },
+    {
+      slug: 'fitness',
+      name: 'Fitness',
+      summary:
+        'Small group training en individuele fitness in een unieke setting.',
+      durationMinutes: 60,
+    },
   ];
 
   for (const activity of activities) {
@@ -83,6 +90,24 @@ async function main() {
             name,
             capacity: 6,
             activityId: matrixId,
+          },
+        });
+      }
+    }
+  }
+
+  // Create resources for fitness
+  const fitnessId = (await prisma.activity.findUnique({ where: { slug: 'fitness' } }))?.id;
+  if (fitnessId) {
+    for (let i = 1; i <= 2; i++) {
+      const name = `Fitness Studio ${i}`;
+      const existing = await prisma.resource.findFirst({ where: { name } });
+      if (!existing) {
+        await prisma.resource.create({
+          data: {
+            name,
+            capacity: 12,
+            activityId: fitnessId,
           },
         });
       }

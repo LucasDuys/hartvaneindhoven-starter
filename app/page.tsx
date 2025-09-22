@@ -43,20 +43,30 @@ export default function Home() {
           <h2 className="text-3xl font-bold mb-4">Onze Activiteiten</h2>
           <p className="text-white/70 max-w-2xl mx-auto">Ontdek ons aanbod van leuke en unieke ervaringen.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { name: "Bowlen", slug: "bowlen", desc: "Geniet van bowling op historische banen." },
-            { name: "Karaoke", slug: "karaoke", desc: "Zing je favoriete hits in privAc kamers." },
-            { name: "Beat the Matrix", slug: "beat-the-matrix", desc: "Test je behendigheid in dit interactieve spel." },
-          ].map(({ name, slug, desc }) => (
+            { name: "Bowlen", slug: "bowlen", desc: "Bowlen in een unieke kerksetting.", hero: "/hve-holy-bowling.jpg" },
+            { name: "Karaoke", slug: "karaoke", desc: "Privé‑karaokekamers met top sound.", hero: "/hve-karaoke.jpg" },
+            { name: "Beat the Matrix", slug: "beat-the-matrix", desc: "Interactieve challenge voor teams.", hero: "/hve-beat-the-matrix2.jpg" },
+            { name: "Fitness", slug: "fitness", desc: "Small group of individueel trainen.", hero: "/hve-fitness.jpg" },
+          ].map(({ name, slug, desc, hero }, i) => (
             <Link
               key={slug}
               href={`/activities/${slug}`}
-              className="card p-6 hover:scale-[1.01] transition animate-fade-in"
+              className="group relative rounded-2xl overflow-hidden border border-white/10 bg-black/40 hover:bg-black/30 transition animate-fade-in"
+              style={{ animationDelay: `${i * 0.05}s` }}
               aria-label={`Bekijk ${name}`}
             >
-              <h3 className="text-xl font-bold mb-2">{name}</h3>
-              <p className="text-white/70">{desc}</p>
+              <div className="relative aspect-video">
+                <Image src={hero} alt={name} fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+              </div>
+              <div className="absolute inset-0 flex items-end">
+                <div className="p-4">
+                  <h3 className="text-xl font-bold text-white drop-shadow">{name}</h3>
+                  <p className="text-white/80 text-sm">{desc}</p>
+                </div>
+              </div>
             </Link>
           ))}
         </div>
