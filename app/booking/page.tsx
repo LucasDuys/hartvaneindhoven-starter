@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 
 type Activity = { id: string; slug: string; name: string };
@@ -9,6 +11,172 @@ function euros(cents: number) {
   return (cents / 100).toFixed(2);
 }
 
+// Animated calendar with enhanced hover/rounded styles
+function AnimatedCalendar({ selected, onSelect, minDate }: { selected: string; onSelect: (d: string) => void; minDate: Date }) {
+  const initial = selected ? (() => {
+    const [yy, mm, dd] = selected.split('-').map(Number);
+    return new Date(yy, (mm || 1) - 1, dd || 1);
+  })() : new Date();
+  const [viewYear, setViewYear] = useState(initial.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initial.getMonth());
+
+  function shiftMonth(delta: number) {
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+  }
+
+  const firstOfMonth = new Date(viewYear, viewMonth, 1);
+  const lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+  const startWeekday = firstOfMonth.getDay();
+  const daysInMonth = lastOfMonth.getDate();
+
+  const min = new Date(minDate);
+  min.setHours(0, 0, 0, 0);
+
+  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+
+  const leading = startWeekday;
+  const cells: Array<{ key: string; label: string; date?: Date; disabled?: boolean }> = [];
+  for (let i = 0; i < leading; i++) cells.push({ key: `b${i}`, label: '' });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(viewYear, viewMonth, d);
+    dt.setHours(0, 0, 0, 0);
+    const disabled = dt < min;
+    cells.push({ key: `d${d}`, label: String(d), date: dt, disabled });
+  }
+
+  const selectedYmd = selected;
+
+  return (
+    <div className="bg-black/60 border border-white/10 rounded-2xl p-6 text-white w-[min(95vw,720px)] max-w-none shadow-[0_20px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+      <div className="flex items-center justify-between mb-3">
+        <button className="px-2 py-1 rounded-lg hover:bg-white/10 active:scale-95 transition" onClick={() => shiftMonth(-1)} aria-label="Vorige maand">{'<'}</button>
+        <div className="font-semibold text-white/90 select-none tracking-wide">{monthLabel}</div>
+        <button className="px-2 py-1 rounded-lg hover:bg-white/10 active:scale-95 transition" onClick={() => shiftMonth(1)} aria-label="Volgende maand">{'>'}</button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-sm md:text-base text-white/70 mb-2">
+        {['Zo','Ma','Di','Wo','Do','Vr','Za'].map((d) => (
+          <div key={d} className="text-center">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((c) => c.date ? (
+          <button
+            key={c.key}
+            disabled={!!c.disabled}
+            onClick={() => onSelect(formatYMD(c.date!))}
+            className={`h-12 md:h-14 rounded-xl text-sm flex items-center justify-center border transition transform ${
+              c.disabled
+                ? 'text-white/30 border-white/5 cursor-not-allowed'
+                : (formatYMD(c.date!) === selectedYmd)
+                  ? 'bg-brand-500 border-brand-500 text-black shadow-md'
+                  : 'bg-black/30 hover:bg-black/20 hover:-translate-y-0.5 hover:scale-[1.03] border-white/10'
+            }`}
+            aria-pressed={formatYMD(c.date!) === selectedYmd}
+          >
+            {c.label}
+          </button>
+        ) : (
+          <div key={c.key} className="h-12 md:h-14" />
+        ))}
+      </div>
+      <div className="mt-3 flex justify-end">
+        <button
+          className="text-sm px-3 py-1 rounded-lg border border-white/10 hover:bg-white/10 active:scale-95 transition"
+          onClick={() => {
+            const now = new Date();
+            const ymd = formatYMD(now);
+            onSelect(ymd);
+          }}
+        >
+          Vandaag
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function formatHumanDate(ymd: string): string {
+  if (!ymd) return '';
+  const [y, m, d] = ymd.split('-').map(Number);
+  const date = new Date(y, (m || 1) - 1, d || 1);
+  try {
+    return date.toLocaleDateString('nl-NL', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' });
+  } catch {
+    return ymd;
+  }
+}
+
+function DatePickerPopover({ value, onChange }: { value: string; onChange: (d: string) => void }) {
+  const [open, setOpen] = useState(false);
+  // Lock body scroll when open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
+
+  function BodyPortal({ children }: { children: React.ReactNode }) {
+    const [mounted, setMounted] = useState(false);
+    const [el] = useState(() => (typeof document !== 'undefined' ? document.createElement('div') : null));
+    useEffect(() => {
+      if (!el) return;
+      document.body.appendChild(el);
+      setMounted(true);
+      return () => { document.body.removeChild(el); };
+    }, [el]);
+    if (!el || !mounted) return null;
+    return createPortal(children as any, el);
+  }
+  return (
+    <>
+      <button
+        type="button"
+        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-left text-white hover:bg-black/30 transition shadow hover:shadow-lg"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
+        {value ? formatHumanDate(value) : 'Selecteer datum'}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <BodyPortal>
+            <motion.div
+              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+            >
+              <motion.div
+                className="fixed z-[110] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(95vw,760px)]"
+                role="dialog"
+                aria-label="Kies datum"
+                initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: 6 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <AnimatedCalendar
+                  selected={value}
+                  onSelect={(ymd) => {
+                    onChange(ymd);
+                    setOpen(false);
+                  }}
+                  minDate={new Date()}
+                />
+              </motion.div>
+            </motion.div>
+          </BodyPortal>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
 // Helpers for date formatting (YYYY-MM-DD)
 function formatYMD(d: Date) {
   const y = d.getFullYear();
@@ -59,7 +227,7 @@ function Calendar({ selected, onSelect, minDate }: { selected: string; onSelect:
   const selectedYmd = selected;
 
   return (
-    <div className="bg-black/40 border border-white/10 rounded-xl p-3 text-white w-full max-w-sm">
+    <div className="bg-black/60 border border-white/10 rounded-2xl p-4 text-white w-full max-w-sm shadow-[0_20px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl">
       <div className="flex items-center justify-between mb-3">
         <button className="px-2 py-1 rounded hover:bg-white/10" onClick={() => shiftMonth(-1)} aria-label="Vorige maand">←</button>
         <div className="font-semibold text-white/90 select-none">{monthLabel}</div>
@@ -363,13 +531,12 @@ function BookingInner() {
                 aria-label="Selecteer datum"
               />
               <div className="relative mt-2">
-                <Calendar
-                  selected={date}
-                  onSelect={(ymd) => {
+                <DatePickerPopover
+                  value={date}
+                  onChange={(ymd) => {
                     setDate(ymd);
                     setSlot("");
                   }}
-                  minDate={new Date()}
                 />
               </div>
               <label className="block text-sm text-white/70">Beschikbare tijden</label>
