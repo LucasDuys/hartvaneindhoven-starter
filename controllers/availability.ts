@@ -61,7 +61,18 @@ export async function getAvailableSlots(input: AvailabilityInput) {
       if (!hasOverlap) freeCount++;
     }
     return { time: slot, remaining: freeCount };
-  }).filter(item => item.remaining > 0);
+  }).filter(item => {
+    // Hide past times for the current day
+    const now = new Date();
+    const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (date === todayYmd) {
+      const [hh, mm] = item.time.split(":").map(Number);
+      const slotDate = new Date();
+      slotDate.setHours(hh || 0, mm || 0, 0, 0);
+      if (slotDate <= now) return false;
+    }
+    return item.remaining > 0;
+  });
 
   return availableWithCounts;
 }
