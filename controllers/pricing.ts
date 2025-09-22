@@ -52,6 +52,9 @@ export async function computeQuote(input: QuoteInput): Promise<Quote> {
   } else if (slug === 'beat-the-matrix') {
     basePerHourCents = 1400; // per person per hour (flat)
     perPerson = true;
+  } else if (slug === 'fitness') {
+    basePerHourCents = peak ? 1500 : 1200; // per person per hour
+    perPerson = true;
   } else {
     basePerHourCents = 1000; // fallback
     perPerson = true;

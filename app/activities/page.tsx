@@ -5,19 +5,25 @@ const activities = [
     slug: "bowlen",
     title: "Bowlen",
     desc: "Geniet van bowling op historische banen in een unieke kerksetting.",
-    hero: "/holy-bowling.webp",
+    hero: "/hve-holy-bowling.jpg",
   },
   {
     slug: "karaoke",
     title: "Karaoke",
     desc: "Zing je favoriete hits in privé kamers met professionele apparatuur.",
-    hero: "https://source.unsplash.com/random/800x600/?karaoke",
+    hero: "/hve-karaoke.jpg",
   },
   {
     slug: "beat-the-matrix",
     title: "Beat the Matrix",
     desc: "Test je behendigheid in dit spannende interactieve spel.",
-    hero: "https://source.unsplash.com/random/800x600/?laser,game",
+    hero: "/hve-beat-the-matrix2.jpg",
+  },
+  {
+    slug: "fitness",
+    title: "Fitness",
+    desc: "Kom in beweging met onze fitnesservaring: small group of individueel.",
+    hero: "/hve-fitness.jpg",
   },
 ];
 

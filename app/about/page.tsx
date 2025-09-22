@@ -1,8 +1,9 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Over ons – Hart van Eindhoven",
-  description: "Maak kennis met Hart van Eindhoven: ons verhaal, onze founders, locatie en socials.",
+  title: "Over ons – Tim & Nathalie | Hart van Eindhoven",
+  description:
+    "Ontmoet de founders van Hart van Eindhoven. Tim Hoeijmans en Nathalie combineren sport, technologie en gastvrijheid in de Sacramentskerk.",
 };
 
 function SocialIcon({ label, href, children }: { label: string; href: string; children: React.ReactNode }) {
@@ -18,17 +19,49 @@ function SocialIcon({ label, href, children }: { label: string; href: string; ch
 }
 
 export default function AboutPage() {
+  const founders: Array<{
+    name: string;
+    role: string;
+    img: string;
+    bullets: string[];
+  }> = [
+    {
+      name: "Tim Hoeijmans",
+      role: "Founder & Concept/Tech Lead",
+      img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&fit=crop",
+      bullets: [
+        "Ex‑Olympisch zwemmer; sinds 2016 visie op sport + entertainment.",
+        "Zag potentie van de Sacramentskerk en transformeerde deze tot Holy Bowling — bowling op verhoogd platform om monumentstatus te respecteren.",
+        "Ontwikkelde Beat the Matrix met eigen softwarebesturing + integratie met bar; introduceerde ‘Heart of Eindhoven’ (voelbare hartslag in de vloer).",
+        "Lanceerde interactieve sportzones en plande uitbreiding met interactieve klimwand.",
+        "Initiatiefnemer van Secret City, een smartphone‑speurtocht die zelfs locals verrast.",
+        "Richt zich op inclusieve, sociale sportbeleving: De Gym met begeleiding, telefoons in kluis, en interactieve games.",
+      ],
+    },
+    {
+      name: "Nathalie",
+      role: "Co‑Founder & Operations/Hospitality Lead",
+      img: "https://images.unsplash.com/photo-1531123414780-f7422d094d83?q=80&w=600&fit=crop",
+      bullets: [
+        "Stuurt de operatie en hospitality van Hart van Eindhoven.",
+        "Zorgt dat horeca en activiteiten elkaar versterken: supporting hospitality (kleine kaart, volle vergunning) + spellen (shuffleboard, interactieve darts, pool).",
+        "Verantwoordelijk voor groepsontvangst tot 240 personen en planning over activiteiten.",
+        "Waakt over de dagelijkse beleving en gastvrijheid.",
+      ],
+    },
+  ];
+
   return (
     <>
       <section
         className="relative h-[45vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1601050690293-9d0fa0fd6bb7?q=80&w=1920&fit=crop')" }}
+        style={{ backgroundImage: "url('/hve-horeca1.jpg')" }}
         aria-label="Over ons hero"
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 text-center animate-fade-in max-w-3xl px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Over Hart van Eindhoven</h1>
-          <p className="text-white/90">Bowlen in een kerk, karaoke, en interactieve belevingen – met liefde gemaakt in Eindhoven.</p>
+          <p className="text-white/90">Bowlen in een kerk, karaoke, fitness en interactieve belevingen — met liefde gemaakt in Eindhoven.</p>
         </div>
       </section>
 
@@ -36,7 +69,7 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="card p-6 animate-fade-in" aria-label="Onze missie">
             <h2 className="text-xl font-bold mb-2">Onze missie</h2>
-            <p className="text-white/80">We brengen mensen bij elkaar met unieke, toegankelijke activiteiten. Van iconische bowlingbanen in een historische setting tot privé-karaokekamers en interactieve challenges.</p>
+            <p className="text-white/80">We brengen mensen bij elkaar met unieke, toegankelijke activiteiten. Van iconische bowlingbanen in een historische setting tot privé‑karaokekamers en interactieve challenges.</p>
           </div>
           <div className="card p-6 animate-fade-in" aria-label="Onze waarden" style={{ animationDelay: '0.1s' }}>
             <h2 className="text-xl font-bold mb-2">Onze waarden</h2>
@@ -52,33 +85,17 @@ export default function AboutPage() {
               <li>Bowlen in een kerk</li>
               <li>Privé karaoke</li>
               <li>Beat the Matrix</li>
+              <li>De Gym (fitness)</li>
             </ul>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Onze founders</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Lucas Duys",
-                role: "Founder & Operations",
-                img: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?q=80&w=600&fit=crop",
-                bio: "Verankert gastvrijheid en kwaliteit in elk detail van de ervaring.",
-              },
-              {
-                name: "Eva Janssen",
-                role: "Co‑Founder & Experience Design",
-                img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&fit=crop",
-                bio: "Ontwerpt verrassende, inclusieve belevenissen die verbinden en verrassen.",
-              },
-              {
-                name: "Ravi de Vries",
-                role: "Co‑Founder & Partnerships",
-                img: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=600&fit=crop",
-                bio: "Bouwt duurzame samenwerkingen met lokale partners en communities.",
-              },
-            ].map((f, i) => (
+        <div className="relative rounded-2xl overflow-hidden">
+          <img src="/hve-horeca2.jpg" alt="Cateringruimte achtergrond" className="absolute inset-0 w-full h-full object-cover opacity-25 blur-sm" aria-hidden />
+          <div className="relative space-y-6 p-4 md:p-6">
+            <h2 className="text-2xl font-bold">Onze founders</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+            {founders.map((f, i) => (
               <div key={f.name} className="card p-6 animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
                 <div className="flex items-center gap-4">
                   <img src={f.img} alt={f.name} className="w-20 h-20 rounded-full object-cover" />
@@ -87,9 +104,14 @@ export default function AboutPage() {
                     <p className="text-white/70 text-sm">{f.role}</p>
                   </div>
                 </div>
-                <p className="text-white/80 mt-4">{f.bio}</p>
+                <ul className="text-white/80 mt-4 list-disc pl-5 space-y-1">
+                  {f.bullets.map((b, idx) => (
+                    <li key={idx}>{b}</li>
+                  ))}
+                </ul>
               </div>
             ))}
+            </div>
           </div>
         </div>
 
