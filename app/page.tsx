@@ -1,14 +1,26 @@
-import Link from "next/link";
+﻿import Link from "next/link";
+import Image from "next/image";
 import FaqAccordion from "@/components/FaqAccordion";
 
 export default function Home() {
   return (
     <>
       <section
-        className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/bowling-alley.jpeg')" }}
+        className="relative flex items-center justify-center overflow-hidden bg-black min-h-[60vh]"
         aria-label="Hero section with bowling in church"
       >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-full max-w-[1600px] aspect-video max-h-[80vh]">
+            <Image
+              src="/bowling-alley.jpeg"
+              alt="Bowling alley inside a church"
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          </div>
+        </div>
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10 text-center animate-fade-in max-w-4xl px-4">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">Bowlen in een kerk</h1>
@@ -34,7 +46,7 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { name: "Bowlen", slug: "bowlen", desc: "Geniet van bowling op historische banen." },
-            { name: "Karaoke", slug: "karaoke", desc: "Zing je favoriete hits in privé kamers." },
+            { name: "Karaoke", slug: "karaoke", desc: "Zing je favoriete hits in privAc kamers." },
             { name: "Beat the Matrix", slug: "beat-the-matrix", desc: "Test je behendigheid in dit interactieve spel." },
           ].map(({ name, slug, desc }) => (
             <Link
@@ -69,7 +81,7 @@ export default function Home() {
                   </a>
                 </p>
                 <p>
-                  Openingstijden: <span className="text-white/90">Ma–Zo 10:00–23:00</span>
+                  Openingstijden: <span className="text-white/90">Ma??"Zo 10:00??"23:00</span>
                 </p>
               </div>
               <div className="mt-4 flex gap-3" aria-label="Social links">

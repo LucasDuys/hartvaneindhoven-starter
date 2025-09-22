@@ -1,5 +1,5 @@
-"use client";
-import { useState, useMemo } from "react";
+﻿"use client";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 
@@ -14,25 +14,49 @@ export default function ActivitiesExpand({ activities }: { activities: Activity[
   const [open, setOpen] = useState<string | null>(null);
   const selected = useMemo(() => activities.find(a => a.slug === open) || null, [open, activities]);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected]);
+
   return (
     <div>
       <div className="grid md:grid-cols-3 gap-6">
-        {activities.map((a, i) => (
-          <motion.button
-            key={a.slug}
-            layoutId={`card-${a.slug}`}
-            onClick={() => setOpen(a.slug)}
-            className="card p-6 text-left hover:scale-[1.01] transition animate-fade-in focus:outline-none focus:ring-2 focus:ring-accent-500"
-            style={{ animationDelay: `${i * 0.1}s` }}
-            aria-expanded={open === a.slug}
-          >
-            <div className="h-40 mb-4 overflow-hidden rounded-xl">
-              <motion.img layoutId={`img-${a.slug}`} src={a.hero} alt={a.title} className="w-full h-full object-cover" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">{a.title}</h3>
-            <p className="text-white/70">{a.desc}</p>
-          </motion.button>
-        ))}
+        {activities.map((a, i) => {
+          const isOpen = open === a.slug;
+          if (isOpen) {
+            // Hide original card while open to avoid duplicate layoutId conflicts
+            return (
+              <div
+                key={a.slug}
+                className="card p-6 opacity-0 pointer-events-none"
+                aria-hidden
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            );
+          }
+          return (
+            <motion.button
+              key={a.slug}
+              layoutId={`card-${a.slug}`}
+              onClick={() => setOpen(a.slug)}
+              className="card p-6 text-left hover:scale-[1.01] transition animate-fade-in focus:outline-none focus:ring-2 focus:ring-accent-500"
+              style={{ animationDelay: `${i * 0.1}s` }}
+              aria-expanded={isOpen}
+            >
+              <div className="h-40 mb-4 overflow-hidden rounded-xl">
+                <motion.img layoutId={`img-${a.slug}`} src={a.hero} alt={a.title} className="w-full h-full object-cover" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">{a.title}</h3>
+              <p className="text-white/70">{a.desc}</p>
+            </motion.button>
+          );
+        })}
       </div>
 
       <AnimatePresence>
@@ -51,24 +75,33 @@ export default function ActivitiesExpand({ activities }: { activities: Activity[
             <motion.div
               key={selected.slug}
               layoutId={`card-${selected.slug}`}
-              className="fixed inset-4 md:inset-10 z-50 card overflow-hidden"
+              className="fixed inset-4 md:inset-10 z-50 card overflow-hidden relative"
+              onClick={e => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
               {/* Full backdrop image, blurred and darkened */}
-              <div className="absolute inset-0">
+              <div className="absolute inset-0 pointer-events-none">
                 <motion.img
                   layoutId={`img-${selected.slug}`}
                   src={selected.hero}
                   alt={selected.title}
                   className="w-full h-full object-contain blur-md"
                 />
-                <div className="absolute inset-0 bg-black/60" />
+                <div className="absolute inset-0 bg-black/60 pointer-events-none" />
               </div>
 
               {/* Close button */}
               <button
-                onClick={() => setOpen(null)}
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setOpen(null);
+                }}
                 aria-label="Sluiten"
-                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full w-9 h-9 flex items-center justify-center z-10"
+                className="absolute top-3 right-3 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full w-9 h-9 flex items-center justify-center transition-colors"
               >
                 ×
               </button>
